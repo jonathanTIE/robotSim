@@ -1,0 +1,40 @@
+// test protobuf
+
+syntax = "proto2";
+
+// fixed messages
+
+message SpeedCommand {
+    required float vx = 1;
+    optional float vy = 2;
+    required float vtheta = 3;
+}
+
+message PosCommand {
+    required float x = 1;
+    required float y = 2;
+    optional float theta = 3;
+}
+
+message OdomReport {
+    required float pos_x = 1;
+    required float pos_y = 2;
+    required float pos_theta = 3;
+}
+
+message IHM {
+    required bool tirette = 1;
+    required bool color = 2;
+}
+
+// robot/year specific messages
+
+message BuoyCatcher {
+    required int32 height = 1;
+    required bool grab = 2;
+}
+
+message FlagServo {
+    required int32 pos = 1;
+}
+

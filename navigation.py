@@ -2,12 +2,13 @@
 import time
 from math import cos, sin, atan2, sqrt
 from enum import Enum
+import messages_pb2 as m
 
 
 class Navigation:
 
     class NavMode(Enum):
-        SPEED    = 0
+        SPEED = 0
         POSITION = 1
     
     class PosControlState(Enum):
@@ -17,18 +18,19 @@ class Navigation:
     
     def __init__(self, pos_init):
         self.pos = pos_init
-        self.pos_obj = (0, 0)
+        self.pos_obj = (0, 0, None)
         self.speed = (0, 0, 0)
         self.mode = Navigation.NavMode.SPEED
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
         self.last_distance_to_obj = 0
     
-    def set_speed(self, speed):
-        self.speed = speed
+    def set_speed(self, speed: m.SpeedCommand):
+        self.speed = (speed.vx, speed.vy, speed.vtheta)
         self.mode = Navigation.NavMode.SPEED
     
-    def set_pos_objective(self, pos):
-        self.pos_obj = pos
+    def set_pos_objective(self, pos: m.PosCommand):
+        theta = pos.theta if pos.HasField('theta') else None
+        self.pos_obj = (pos.x, pos.y, theta)
         self.mode = Navigation.NavMode.POSITION
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
     

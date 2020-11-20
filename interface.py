@@ -3,17 +3,12 @@
 class Interface:
     
     def __init__(self):
-        self.speed_cb = []
-        self.pos_cb = []
-    
-    def register_speed_cb(self, cb):
-        self.speed_cb.append(cb)
+        self.cbs = {}
 
-    def register_pos_cb(self, cb):
-        self.pos_cb.append(cb)
-    
-    def send_pos_report(self, pos):
-        raise NotImplementedError()
+    def register_msg_cb(self, cb, msg_type):
+        if msg_type not in self.cbs:
+            self.cbs[msg_type] = []
+        self.cbs[msg_type].append(cb)
     
     def start(self, *args):
         raise NotImplementedError()

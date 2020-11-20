@@ -4,21 +4,22 @@ import time
 from enum import Enum
 from navigation import Navigation
 from ivy_interface import IvyInterface
+import messages_pb2 as m
 
 BUS = "127.255.255.255:2010"
+
 
 class Robot:
     
     class Modules(Enum):
         NAV = 0
         ODOM_REPORT = 1
-    
 
     def __init__(self, bus=BUS, pos_init=(1500, 1000, 0)):
-        self.com = IvyInterface(bus)
+        self.com = IvyInterface("Omnius", bus)
         self.nav = Navigation(pos_init)
-        self.com.register_speed_cb(self.nav.set_speed)
-        self.com.register_pos_cb(self.nav.set_pos_objective)
+        self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
+        self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
         self.com.start()
         self.modules_period = {}
         self.modules_update = {}
@@ -29,7 +30,7 @@ class Robot:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, t, value, traceback):
         self.com.stop()
     
     def register_module(self, module, period, update):
@@ -44,11 +45,14 @@ class Robot:
             if dt >= self.modules_period[module]:
                 self.modules_update[module](dt)
                 self.modules_update_time[module] = now
-        
-        
+
     def update_odom_report(self, dt):
         x, y, theta = self.nav.pos
-        self.com.send_pos_report((x, y, theta))
+        odom_report = m.OdomReport()
+        odom_report.pos_x = x
+        odom_report.pos_y = y
+        odom_report.pos_theta = theta
+        self.com.send_message(odom_report)
         
     def run(self):
         while True:

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from ivy.std_api import *
 from interface import Interface
+import messages_pb2 as m
 
 BUS = "127.255.255.255:2010"
 
@@ -12,40 +13,59 @@ POS_ORIENT_REG = "Go to orient (.+),(.+),(.+)"
 
 POS_REPORT = "Update robot pose {};{};{}"
 
+ACTUATOR_CMD = "ActuatorCmd((?:(?: \w+)+))$"
+
 
 class IvyInterface(Interface):
 
-    def __init__(self, bus=BUS):
+    def __init__(self, robot_name, bus=BUS):
         Interface.__init__(self)
-        IvyInit("Robot", "TestIvy OK!")
+        IvyInit(robot_name, robot_name + " ready!")
         self.bus = bus
         IvyBindMsg(self.on_speed_cmd,      SPEED_REG)
         IvyBindMsg(self.on_pos_cmd,        POS_REG)
         IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG)
+        IvyBindMsg(self.on_actuator_cmd,   ACTUATOR_CMD)
     
     def start(self):
         IvyStart(self.bus)
 
     def stop(self):
         IvyStop()
-    
-    def send_pos_report(self, pos):
-        x, y, theta = pos
-        IvySendMsg(POS_REPORT.format(x, y, theta))
+
+    def send_message(self, msg):
+        ivymsg = None
+        if type(msg) == m.OdomReport:
+            ivymsg = POS_REPORT.format(msg.pos_x, msg.pos_y, msg.pos_theta)
+        if ivymsg is not None:
+            IvySendMsg(ivymsg)
     
     def on_speed_cmd(self, sender, vx, vy, vtheta):
-        print("sender", sender)
-        speed = (float(vx) * 300, float(vy) * 300, float(vtheta) * 1.0)
-        for cb in self.speed_cb:
+        speed = m.SpeedCommand()
+        speed.vx = float(vx) * 300
+        speed.vy = float(vy) * 300
+        speed.vtheta = float(vtheta) * 1.0
+        for cb in self.cbs.get(m.SpeedCommand, []):
             cb(speed)
 
     def on_pos_cmd(self, sender, x, y):
-        pos = (float(x), float(y), None)
-        for cb in self.pos_cb:
+        pos = m.PosCommand()
+        pos.x = float(x)
+        pos.y = float(y)
+        for cb in self.cbs.get(m.PosCommand, []):
             cb(pos)
+
+    def on_actuator_cmd(self, sender, args):
+        args = args.strip()
+        args = args.split()
+        for cb in self.actuators_cb:
+            cb(args)
     
     def on_pos_orient_cmd(self, sender, x, y, theta):
-        pos = (float(x), float(y), float(theta))
-        for cb in self.pos_cb:
+        pos = m.PosCommand()
+        pos.x = float(x)
+        pos.y = float(y)
+        pos.theta = float(theta)
+        for cb in self.cbs.get(m.PosCommand, []):
             cb(pos)
 
