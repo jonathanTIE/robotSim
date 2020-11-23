@@ -2,6 +2,7 @@
 from ivy.std_api import *
 import time
 from enum import Enum
+import sys
 from navigation import Navigation
 from ivy_interface import IvyInterface
 import messages_pb2 as m
@@ -15,8 +16,8 @@ class Robot:
         NAV = 0
         ODOM_REPORT = 1
 
-    def __init__(self, bus=BUS, pos_init=(1500, 1000, 0)):
-        self.com = IvyInterface("Omnius", bus)
+    def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
+        self.com = IvyInterface(robot_name, bus)
         self.nav = Navigation(pos_init)
         self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
         self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
@@ -61,5 +62,8 @@ class Robot:
         
 
 if __name__ == '__main__':
-    with Robot() as robot:
+    if len(sys.argv) != 2:
+        print("Usage: ./simu_robot.py robot_name")
+        exit(-1)
+    with Robot(sys.argv[1]) as robot:
         robot.run()

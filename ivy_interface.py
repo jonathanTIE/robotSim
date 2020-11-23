@@ -5,13 +5,11 @@ import messages_pb2 as m
 
 BUS = "127.255.255.255:2010"
 
-#SPEED_REG = "SpeedCmd (.+) (.+) (.+)"
-SPEED_REG = "Direction (.+),(.+),(.+)"
-POS_REG =  "Go to linear (.+),(.+)"
-POS_ORIENT_REG = "Go to orient (.+),(.+),(.+)"
-#POS_REG   = "PosCmd (.+) (.+) (.+) (.+)"
+SPEED_REG = "SpeedCmd {} (.+),(.+),(.+)"
+POS_REG =  "PosCmd {} (.+),(.+)"
+POS_ORIENT_REG = "PosCmdOrient {} (.+),(.+),(.+)"
 
-POS_REPORT = "Update robot pose {};{};{}"
+POS_REPORT = "PosReport {} {};{};{}"
 
 ACTUATOR_CMD = "ActuatorCmd((?:(?: \w+)+))$"
 
@@ -21,10 +19,11 @@ class IvyInterface(Interface):
     def __init__(self, robot_name, bus=BUS):
         Interface.__init__(self)
         IvyInit(robot_name, robot_name + " ready!")
+        self.rid = robot_name
         self.bus = bus
-        IvyBindMsg(self.on_speed_cmd,      SPEED_REG)
-        IvyBindMsg(self.on_pos_cmd,        POS_REG)
-        IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG)
+        IvyBindMsg(self.on_speed_cmd,      SPEED_REG.format(self.rid))
+        IvyBindMsg(self.on_pos_cmd,        POS_REG.format(self.rid))
+        IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG.format(self.rid))
         IvyBindMsg(self.on_actuator_cmd,   ACTUATOR_CMD)
     
     def start(self):
@@ -36,7 +35,7 @@ class IvyInterface(Interface):
     def send_message(self, msg):
         ivymsg = None
         if type(msg) == m.OdomReport:
-            ivymsg = POS_REPORT.format(msg.pos_x, msg.pos_y, msg.pos_theta)
+            ivymsg = POS_REPORT.format("daneel", msg.pos_x, msg.pos_y, msg.pos_theta)
         if ivymsg is not None:
             IvySendMsg(ivymsg)
     
