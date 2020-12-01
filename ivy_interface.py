@@ -35,7 +35,7 @@ class IvyInterface(Interface):
     def send_message(self, msg):
         ivymsg = None
         if type(msg) == m.OdomReport:
-            ivymsg = POS_REPORT.format("daneel", msg.pos_x, msg.pos_y, msg.pos_theta)
+            ivymsg = POS_REPORT.format(self.rid, msg.pos_x, msg.pos_y, msg.pos_theta)
         if ivymsg is not None:
             IvySendMsg(ivymsg)
     
