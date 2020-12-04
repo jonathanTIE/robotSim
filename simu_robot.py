@@ -5,7 +5,6 @@ from enum import Enum
 import sys
 from navigation import Navigation
 from ivy_interface import IvyInterface
-from ivy.ivy import IvyIllegalStateError
 import messages_pb2 as m
 
 BUS = "127.255.255.255:2010"
@@ -57,9 +56,10 @@ class Robot:
         self.com.send_message(odom_report)
         
     def run(self):
-        while not self.com.STOP :
+        while self.com.running :
             self.update()
             time.sleep(0.01)
+        self.com.stop ()
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

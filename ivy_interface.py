@@ -23,7 +23,7 @@ class IvyInterface(Interface):
         IvyInit(robot_name, robot_name + " ready!")
         self.rid = robot_name
         self.bus = bus
-        self.STOP = False
+        self.running = True
         IvyBindMsg(self.on_speed_cmd,      SPEED_REG.format(self.rid))
         IvyBindMsg(self.on_pos_cmd,        POS_REG.format(self.rid))
         IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG.format(self.rid))
@@ -72,4 +72,4 @@ class IvyInterface(Interface):
         for cb in self.cbs.get(m.PosCommand, []):
             cb(pos)
     def on_kill_cmd (self,*args):
-        self.STOP = True 
+        self.running = False
