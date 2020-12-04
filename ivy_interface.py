@@ -13,7 +13,7 @@ POS_REPORT = "PosReport {} {};{};{}"
 
 ACTUATOR_CMD = "ActuatorCmd((?:(?: \w+)+))$"
 
-KILL_CMD = "Disconnect {}"
+KILL_CMD = "Shutdown {}"
 
 
 class IvyInterface(Interface):
