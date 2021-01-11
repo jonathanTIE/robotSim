@@ -5,6 +5,7 @@ from enum import Enum
 import sys
 from navigation import Navigation
 from ivy_interface import IvyInterface
+from actuators import Actuators
 import messages_pb2 as m
 
 BUS = "127.255.255.255:2010"
@@ -15,18 +16,26 @@ class Robot:
     class Modules(Enum):
         NAV = 0
         ODOM_REPORT = 1
+        ACTUATORS = 2
 
     def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
         self.com = IvyInterface(robot_name, bus)
         self.nav = Navigation(pos_init)
+        self.actuators = Actuators()
         self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
         self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
+        self.com.register_msg_cb(self.actuators.handle_cmd, Actuators)
         self.com.start()
         self.modules_period = {}
         self.modules_update = {}
         self.modules_update_time = {}
         self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
         self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
+        self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
+
+        time.sleep(0.1)
+        for ac in self.actuators.actuators:
+            self.com.declare_actuator(ac)
 
     def __enter__(self):
         return self
@@ -54,6 +63,13 @@ class Robot:
         odom_report.pos_y = y
         odom_report.pos_theta = theta
         self.com.send_message(odom_report)
+
+    def update_actuators(self, dt):
+        self.actuators.update()
+        for ac in self.actuators.actuators:
+            if ac.val_changed == True:
+                ac.val_changed=False
+                self.com.report_actuator(ac)
         
     def run(self):
         while True:
