@@ -19,9 +19,9 @@ class Robot:
         ACTUATORS = 2
 
     def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
-        self.com = IvyInterface(robot_name, bus)
-        self.nav = Navigation(pos_init)
         self.actuators = Actuators()
+        self.com = IvyInterface(robot_name, self.actuators, bus)
+        self.nav = Navigation(pos_init)
         self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
         self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
         self.com.register_msg_cb(self.actuators.handle_cmd, Actuators)
@@ -32,10 +32,6 @@ class Robot:
         self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
         self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
         self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
-
-        time.sleep(0.1)
-        for ac in self.actuators.actuators:
-            self.com.declare_actuator(ac)
 
     def __enter__(self):
         return self

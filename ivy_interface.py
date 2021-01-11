@@ -10,6 +10,7 @@ SPEED_REG = "SpeedCmd {} (.+) (.+) (.+)"
 POS_REG =  "PosCmd {} (.+) (.+)"
 POS_ORIENT_REG = "PosCmdOrient {} (.+) (.+) (.+)"
 ACTUATOR_CMD = "ActuatorCmd {} (.+) (.+)"
+ACTUATORS_REQUEST = "ActuatorsRequest {}"
 
 ACTUATOR_DECL = "ActuatorDecl {} {} {} {} {} {} {}"
 POS_REPORT = "PosReport {} {} {} {}"
@@ -20,16 +21,18 @@ KILL_CMD = "Shutdown {}"
 
 class IvyInterface(Interface):
 
-    def __init__(self, robot_name, bus=BUS):
+    def __init__(self, robot_name, actuators, bus=BUS):
         Interface.__init__(self)
         IvyInit(robot_name, robot_name + " ready!")
         self.rid = robot_name
+        self.actuators = actuators
         self.bus = bus
         self.running = True
         IvyBindMsg(self.on_speed_cmd,      SPEED_REG.format(self.rid))
         IvyBindMsg(self.on_pos_cmd,        POS_REG.format(self.rid))
         IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG.format(self.rid))
         IvyBindMsg(self.on_actuator_cmd,   ACTUATOR_CMD.format(self.rid))
+        IvyBindMsg(lambda *args: self.declare_actuators(),   ACTUATORS_REQUEST.format(self.rid))
         IvyBindMsg(self.on_kill_cmd, KILL_CMD.format (self.rid))
     
     def start(self):
@@ -44,11 +47,6 @@ class IvyInterface(Interface):
             ivymsg = POS_REPORT.format(self.rid, msg.pos_x, msg.pos_y, msg.pos_theta)
         if ivymsg is not None:
             IvySendMsg(ivymsg)
-
-    def declare_actuator(self, ac):
-        rights = "READ" if ac.rwtype == RWType.R else "RW" 
-        ivymsg = ACTUATOR_DECL.format(self.rid, ac.name, ac.min, ac.max, ac.step, rights, ac.unit)
-        IvySendMsg(ivymsg)
 
     def report_actuator(self, ac):
         ivymsg = ACTUATOR_REPORT.format(self.rid, ac.name, ac.value)
@@ -72,7 +70,14 @@ class IvyInterface(Interface):
     def on_actuator_cmd(self, sender, name, value):
         for cb in self.cbs.get(Actuators, []):
             cb(name, value)
-    
+
+    def declare_actuators(self):
+        for ac in self.actuators.actuators:
+            rights = "READ" if ac.rwtype == RWType.R else "RW" 
+            ivymsg = ACTUATOR_DECL.format(self.rid, ac.name, ac.min, ac.max, ac.step, rights, ac.unit)
+            IvySendMsg(ivymsg)
+
+
     def on_pos_orient_cmd(self, sender, x, y, theta):
         pos = m.PosCommand()
         pos.x = float(x)
