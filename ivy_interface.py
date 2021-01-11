@@ -15,6 +15,8 @@ ACTUATOR_DECL = "ActuatorDecl {} {} {} {} {} {} {}"
 POS_REPORT = "PosReport {} {} {} {}"
 ACTUATOR_REPORT = "ActuatorReport {} {} {}"
 
+KILL_CMD = "Shutdown {}"
+
 
 class IvyInterface(Interface):
 
@@ -23,10 +25,12 @@ class IvyInterface(Interface):
         IvyInit(robot_name, robot_name + " ready!")
         self.rid = robot_name
         self.bus = bus
+        self.running = True
         IvyBindMsg(self.on_speed_cmd,      SPEED_REG.format(self.rid))
         IvyBindMsg(self.on_pos_cmd,        POS_REG.format(self.rid))
         IvyBindMsg(self.on_pos_orient_cmd, POS_ORIENT_REG.format(self.rid))
         IvyBindMsg(self.on_actuator_cmd,   ACTUATOR_CMD.format(self.rid))
+        IvyBindMsg(self.on_kill_cmd, KILL_CMD.format (self.rid))
     
     def start(self):
         IvyStart(self.bus)
@@ -76,4 +80,5 @@ class IvyInterface(Interface):
         pos.theta = float(theta)
         for cb in self.cbs.get(m.PosCommand, []):
             cb(pos)
-
+    def on_kill_cmd (self,*args):
+        self.running = False
