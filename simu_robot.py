@@ -41,7 +41,8 @@ class Robot:
         return self
 
     def __exit__(self, t, value, traceback):
-        self.com.stop()
+        if self.com.running:
+            self.com.stop()
     
     def register_module(self, module, period, update):
         self.modules_period[module] = period
