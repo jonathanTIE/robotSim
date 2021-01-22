@@ -1,8 +1,17 @@
 #!/usr/bin/python3
 import time
-from math import cos, sin, atan2, sqrt
+from math import cos, sin, atan2, sqrt, pi
 from enum import Enum
 import messages_pb2 as m
+
+
+def normalize_angle(angle):
+    a = angle
+    while a >= pi:
+        a -= 2*pi
+    while a < -pi:
+        a += 2*pi
+    return a
 
 
 class Navigation:
@@ -44,7 +53,8 @@ class Navigation:
         else:
             theta_diff = route - theta
         
-        theta_diff = (theta_diff + 180) % 360 - 180
+        #theta_diff = (theta_diff + 180) % 360 - 180
+        theta_diff = normalize_angle(theta_diff)
         distance = sqrt((x_obj - x)**2 + (y_obj - y)**2)
         
         vtheta = 0
@@ -90,7 +100,7 @@ class Navigation:
         x += vx0*dt
         y += vy0*dt
         theta += vtheta*dt
-        self.pos = (x, y, theta)
+        self.pos = (x, y, normalize_angle(theta))
 
     def update(self, dt):
         if self.mode == Navigation.NavMode.POSITION:
