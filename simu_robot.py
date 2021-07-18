@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-from ivy.std_api import *
 import time
 from enum import Enum
 import sys
 from navigation import Navigation
-from ivy_interface import IvyInterface
 from actuators import Actuators
 import messages_pb2 as m
 

@@ -3,6 +3,9 @@
 syntax = "proto2";
 
 // fixed messages
+//to add other messages :
+// 1. add a field in message TopLevelMsg { oneof msg }
+// 2. update send_msg in interface.py
 
 message SpeedCommand {
     required float vx = 1;
@@ -38,3 +41,14 @@ message FlagServo {
     required int32 pos = 1;
 }
 
+//
+message TopLevelMsg {
+    oneof msg {
+        SpeedCommand speed = 1;
+        PosCommand pos = 2;
+        OdomReport odom = 3;
+        IHM ihm = 4;
+        BuoyCatcher buoy = 5;
+        FlagServo servo = 6;
+    }
+}

@@ -1,3 +1,2 @@
-ivy-python
 protobuf
 
