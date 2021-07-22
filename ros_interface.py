@@ -14,7 +14,7 @@ class RosInterface(Node):
         self.speedTimer = self.create_timer(rate, self.publish_speed_reading)
 
     def publish_speed_reading(self):
-        self.publisher_speed.publish()
+        self.publisher_speed.publish(data)
 
 
 
