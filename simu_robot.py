@@ -31,6 +31,11 @@ class Robot:
         self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
         self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
 
+    def transmission_builder(self):
+        # [[nameOfData, get_data_callback, rate], ...]
+
+        #self.com.transmit_continuously("speed_reading", self.nav.returnpos, 60)
+
     def __enter__(self):
         return self
 

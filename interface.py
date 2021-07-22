@@ -15,6 +15,9 @@ ACTUATOR_REPORT = "ActuatorReport {} {} {}"
 
 KILL_CMD = "Shutdown {}"
 
+
+
+
 class CommandParser:
     """
         take as input one of the command in the format above, and trigger the simulator or vice-versa
