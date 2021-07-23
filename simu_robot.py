@@ -4,7 +4,8 @@ from enum import Enum
 import sys
 from navigation import Navigation
 from actuators import Actuators
-import messages_pb2 as m
+#import messages_pb2 as m
+from ros_interface import RosInterface
 
 BUS = "127.255.255.255:2010"
 
@@ -18,18 +19,21 @@ class Robot:
 
     def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
-        self.com = IvyInterface(robot_name, self.actuators, bus)
+        #self.com = IvyInterface(robot_name, self.actuators, bus)
+        self.com = RosInterface("robotSim")
+
         self.nav = Navigation(pos_init)
-        self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
-        self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
-        self.com.register_msg_cb(self.actuators.handle_cmd, Actuators)
+        #self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
+        #self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
+        #self.com.register_msg_cb(self.actuators.handle_cmd, Actuators)
         self.com.start()
         self.modules_period = {}
         self.modules_update = {}
         self.modules_update_time = {}
-        self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
-        self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
-        self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
+        #self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
+        #self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
+        #self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
+        self.com.update_data_continuous("odom_report", "position", self.get_odom_report, 100)
 
     def transmission_builder(self):
         # [[nameOfData, get_data_callback, rate], ...]
@@ -62,14 +66,17 @@ class Robot:
         odom_report.pos_x = x
         odom_report.pos_y = y
         odom_report.pos_theta = theta
-        self.com.send_message(odom_report)
 
     def update_actuators(self, dt):
         self.actuators.update()
         for ac in self.actuators.actuators:
             if ac.val_changed == True:
                 ac.val_changed=False
-                self.com.report_actuator(ac)
+                #self.com.report_actuator(ac)
+
+    def get_odom_report(self):
+        x, y, theta = self.nav.pos
+        return [x,y,theta]
         
     def run(self):
         while self.com.running :
