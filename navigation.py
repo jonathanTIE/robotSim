@@ -2,8 +2,7 @@
 import time
 from math import cos, sin, atan2, sqrt, pi
 from enum import Enum
-import messages_pb2 as m
-
+from geometry_msg.msg import Twist
 
 def normalize_angle(angle):
     a = angle
@@ -33,13 +32,13 @@ class Navigation:
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
         self.last_distance_to_obj = 0
     
-    def set_speed(self, speed: m.SpeedCommand):
-        self.speed = (speed.vx, speed.vy, speed.vtheta)
+    def set_speed(self, speed: Twist):
+        self.speed = (speed.linear.x, speed.linear.y, speed.angular.z)
         self.mode = Navigation.NavMode.SPEED
     
-    def set_pos_objective(self, pos: m.PosCommand):
-        theta = pos.theta if pos.HasField('theta') else None
-        self.pos_obj = (pos.x, pos.y, theta)
+    def set_pos_objective(self, pos: Twist):
+
+        self.pos_obj = (pos.linear.x, pos.linear.y, pos.angular.theta)
         self.mode = Navigation.NavMode.POSITION
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
     

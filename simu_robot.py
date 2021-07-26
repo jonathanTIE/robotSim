@@ -7,6 +7,8 @@ from actuators import Actuators
 #import messages_pb2 as m
 from ros_interface import RosInterface
 
+from geometry_msgs.msg import Twist
+
 BUS = "127.255.255.255:2010"
 
 
@@ -20,25 +22,21 @@ class Robot:
     def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
-        self.com = RosInterface("robotSim")
-
         self.nav = Navigation(pos_init)
-        #self.com.register_msg_cb(self.nav.set_speed, m.SpeedCommand)
-        #self.com.register_msg_cb(self.nav.set_pos_objective, m.PosCommand)
-        #self.com.register_msg_cb(self.actuators.handle_cmd, Actuators)
-        self.com.start()
         self.modules_period = {}
         self.modules_update = {}
         self.modules_update_time = {}
-        #self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
-        #self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
-        #self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
-        self.com.update_data_continuous("odom_report", "position", self.get_odom_report, 100)
+        self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
+        self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
 
-    def transmission_builder(self):
-        # [[nameOfData, get_data_callback, rate], ...]
+        #COMMUNICATION INIT :
+        self.com = RosInterface("robotSim")
+        self.com.start()
+        self.com.register_msg_callback('speed_cmd', Twist, self.nav.set_speed)
+        self.com.register_msg_callback('position_cmd', Twist, self.nav.set_pos_objective)
+        #self.com.register_msg_callback('actuator_cmd', self.actuators.handle_cmd, Actuators)
 
-        #self.com.transmit_continuously("speed_reading", self.nav.returnpos, 60)
+        self.com.update_data_continuous("odom_report", Twist, self.get_odom_report, 100)
 
     def __enter__(self):
         return self
@@ -60,12 +58,6 @@ class Robot:
                 self.modules_update[module](dt)
                 self.modules_update_time[module] = now
 
-    def update_odom_report(self, dt):
-        x, y, theta = self.nav.pos
-        odom_report = m.OdomReport()
-        odom_report.pos_x = x
-        odom_report.pos_y = y
-        odom_report.pos_theta = theta
 
     def update_actuators(self, dt):
         self.actuators.update()
@@ -79,10 +71,11 @@ class Robot:
         return [x,y,theta]
         
     def run(self):
-        while self.com.running :
+        while self.com:#.running :
             self.update()
+            self.com.process_com()
             time.sleep(0.01)
-        self.com.stop ()
+        #self.com.stop ()
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

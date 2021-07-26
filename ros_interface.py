@@ -16,15 +16,35 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
     def __init__(self, node_name = "robotSim"):
         super().__init__(node_name)
 
-    def start(self):
+    def start(self, args=None):
+        rclpy.init(args=args)
         pass
+
+    def process_com(self):
+        rclpy.spinOnce(self)
 
     def stop(self):
         self.destroy_node()
         rclpy.shutdown()
 
+    @staticmethod
+    def convert_type_msg_str(type_msg_str: str):
+        """
 
-    def update_data_continuous(self, name : str, type_msg_str: str, get_data_callback, rate : float):
+        :param type_msg_str:
+        :return: the type_msg in "ROS.msg" format from the str
+        """
+        type_msg = None
+        if type_msg_str == "string":
+            type_msg = String
+        elif type_msg_str == "position":
+            type_msg = Twist
+        else:
+            raise NotImplementedError()
+        return type_msg
+        # usage :         type_msg = self.convert_type_msg_str(type_msg_str)
+
+    def update_data_continuous(self, name : str, type_msg, get_data_callback, rate : float):
         """
 
         :param name:
@@ -33,14 +53,6 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
         :param rate:
         :return:
         """
-
-        type_msg = None
-        if type_msg_str == "string":
-            type_msg = String
-        elif type_msg_str == "position":
-            type_msg = Twist
-        else:
-            raise NotImplementedError()
 
         publisher = self.create_publisher(type_msg, name, 10)        #le 10 est arbitraire et fait référence à un "QoS setting", voir ici https://docs.ros2.org/foxy/api/rclpy/api/node.html#rclpy.node.Node.create_publisher
         for i in self.publishers:
@@ -65,13 +77,17 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
         publisher.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
 
-    def register_msg_cb(self, cb, msg_type):
+    def register_msg_callback(self, name : str, type_msg, get_data_callback):
+        self.create_subscription(
+            type_msg,
+            name,
+            get_data_callback,
+            10 #QOS chelou ?
+            )
+
+    def read_data(self, request, response):
+        #execute request, and do response
         pass
-        #self.[[DYNAMICNAME]] = self.create_subscription(
-    # msg_type,
-    # 'name_of_topic',
-    #cb,
-    # 10)
 
     """
     Recevoir dans un action si on doit déclencher ou stopper ou changer le rate 
