@@ -3,10 +3,30 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 
+import interface
+from data_types import PositionOriented, StrMsg
+
 
 #from interface import Interface
 from random import randint
 
+def positionToTwist(position:PositionOriented):
+    twist = Twist()
+    twist.linear.x = position.x
+    twist.linear.y = position.y
+    twist.angular.z = position.theta
+    return twist
+
+def TwistToPosition(twist:Twist):
+    return PositionOriented(twist.linear.x, twist.linear.y, twist.angular.z)
+
+def strMsgToString(strMsg:StrMsg):
+    string = String()
+    string.data = str(strMsg)
+    return string
+
+def StringToStrMsg(string:String):
+    return StrMsg(string)
 
 class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) because super() need to init node
 
@@ -18,6 +38,8 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
         print("rclpy initiated in ros_interface !")
         super().__init__(node_name)
 
+    dataTypeToInterfaceType = {PositionOriented:positionToTwist, StrMsg:strMsgToString}
+    interfaceTypeToDataType = {Twist:TwistToPosition, String:StringToStrMsg}
 
     def start(self, args=None):
 
@@ -29,23 +51,6 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
     def stop(self):
         self.destroy_node()
         rclpy.shutdown()
-
-    @staticmethod
-    def convert_type_msg_str(type_msg_str: str):
-        """
-
-        :param type_msg_str:
-        :return: the type_msg in "ROS.msg" format from the str
-        """
-        type_msg = None
-        if type_msg_str == "string":
-            type_msg = String
-        elif type_msg_str == "position":
-            type_msg = Twist
-        else:
-            raise NotImplementedError()
-        return type_msg
-        # usage :         type_msg = self.convert_type_msg_str(type_msg_str)
 
     def update_data_continuous(self, name : str, type_msg, get_data_callback, rate : float):
         """

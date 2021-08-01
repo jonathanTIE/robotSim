@@ -2,7 +2,9 @@
 import time
 from math import cos, sin, atan2, sqrt, pi
 from enum import Enum
-from geometry_msgs.msg import Twist
+from data_types import PositionOriented
+
+
 
 def normalize_angle(angle):
     a = angle
@@ -32,13 +34,13 @@ class Navigation:
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
         self.last_distance_to_obj = 0
     
-    def set_speed(self, speed: Twist):
-        self.speed = (speed.linear.x, speed.linear.y, speed.angular.z)
+    def set_speed(self, speed: PositionOriented):
+        self.speed = (speed.x, speed.y, speed.theta)
         self.mode = Navigation.NavMode.SPEED
     
-    def set_pos_objective(self, pos: Twist):
+    def set_pos_objective(self, pos: PositionOriented):
 
-        self.pos_obj = (pos.linear.x, pos.linear.y, None)
+        self.pos_obj = (pos.x, pos.y, None)
         self.mode = Navigation.NavMode.POSITION
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
     

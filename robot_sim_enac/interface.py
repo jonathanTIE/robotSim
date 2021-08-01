@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from actuators import Actuators, RWType
+from data_types import PositionOriented, StrMsg
 
 SPEED_REG = "SpeedCmd {} (.+) (.+) (.+)"
 POS_REG = "PosCmd {} (.+) (.+)"
@@ -20,6 +21,11 @@ class Interface():
         Abstract class that needs to be inherited with any "outside" connection/interface (Serial, Ivy,..)
         in order to communicate with the simulator
     """
+
+
+
+
+
     def __init__(self, robot_name):
         pass
 

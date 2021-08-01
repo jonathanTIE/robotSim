@@ -2,15 +2,19 @@
 import time
 from enum import Enum
 import sys
-from robot_sim_enac.navigation import Navigation
-from robot_sim_enac.actuators import Actuators
-#import messages_pb2 as m
-from robot_sim_enac.ros_interface import RosInterface
-import rclpy
 
-from geometry_msgs.msg import Twist
-
-BUS = "127.255.255.255:2010"
+INTERFACE = "ROS"
+try:
+    from robot_sim_enac.navigation import Navigation
+    from robot_sim_enac.actuators import Actuators
+    #import messages_pb2 as m
+    from robot_sim_enac.ros_interface import RosInterface
+except ModuleNotFoundError:
+    from navigation import Navigation
+    from actuators import Actuators
+    from local_debug import LocalDebug
+    INTEFACE = "CONSOLE"
+    #impo as m
 
 
 class Robot:
@@ -20,7 +24,7 @@ class Robot:
         #ODOM_REPORT = 1
         ACTUATORS = 1
 
-    def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
+    def __init__(self, robot_name, pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
         self.nav = Navigation(pos_init)
@@ -31,7 +35,10 @@ class Robot:
         self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
 
         #COMMUNICATION INIT :
-        self.com = RosInterface("robotSim")
+        if(INTEFACE == "CONSOLE"):
+            self.com = LocalDebug("robotSim")
+        else:
+            self.com = RosInterface("robotSim")
         self.com.start()
         self.com.register_msg_callback('speed_cmd', Twist, self.nav.set_speed)
         self.com.register_msg_callback('position_cmd', Twist, self.nav.set_pos_objective)
