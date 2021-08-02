@@ -11,7 +11,8 @@ from robot_sim_enac.actuators import Actuators
     #import messages_pb2 as m
 try:
     from robot_sim_enac.ros_interface import RosInterface
-except ModuleNotFoundError:
+except ModuleNotFoundError as e:
+    print(e)
     from robot_sim_enac.local_debug import LocalDebug
     INTEFACE = "CONSOLE"
     #impo as m

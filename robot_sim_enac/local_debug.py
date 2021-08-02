@@ -33,9 +33,8 @@ class LocalDebug(Interface):
 
 
     def update_data_continuous(self, name : str, dataType: data_type, get_data_callback, rate : float):
-        self.tasks.append(asyncio.create_task(
-            self.publish_regularly(get_data_callback, rate)
-        ))
+        print(get_data_callback())
+        self.schedulder.enter(rate, 3, self.update_data_continuous, (name, dataType, get_data_callback, rate))
 
     def register_msg_callback(self, name: str, dataType:data_type, set_data_callback):
         print("warning, register_msg_callback not supported with local_debug")
