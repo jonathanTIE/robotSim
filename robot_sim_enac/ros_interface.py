@@ -4,45 +4,58 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 
 import interface
-from data_types import PositionOriented, StrMsg
+from data_types import data_type, PositionOriented, StrMsg
 
-
-#from interface import Interface
+# from interface import Interface
 from random import randint
 
-def positionToTwist(position:PositionOriented):
-    twist = Twist()
-    twist.linear.x = position.x
-    twist.linear.y = position.y
-    twist.angular.z = position.theta
-    return twist
 
-def TwistToPosition(twist:Twist):
-    return PositionOriented(twist.linear.x, twist.linear.y, twist.angular.z)
-
-def strMsgToString(strMsg:StrMsg):
-    string = String()
-    string.data = str(strMsg)
-    return string
-
-def StringToStrMsg(string:String):
-    return StrMsg(string)
-
-class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) because super() need to init node
+def get_ros_type(dataType):
+    if dataType == PositionOriented:
+        return Twist
+    elif dataType == StrMsg:
+        return String
+    else:
+        return NotImplementedError()
 
 
-    #{data:fonction associée}
+def convert_to_type_ros(to_convert):
+    converted = None
+    if type(to_convert) == PositionOriented:
+        converted = Twist()
+        converted.linear.x = to_convert.x
+        converted.linear.y = to_convert.y
+        converted.angular.z = to_convert.theta
+    elif type(to_convert) == StrMsg:
+        converted = String()
+        converted.data = str(to_convert)
+    else:
+        raise NotImplementedError()
+    return converted
 
-    def __init__(self, node_name = "robotSim"): #TODO : add args
-        rclpy.init()#(args=args)
+
+def convert_to_data_type(to_convert):
+    if type(to_convert) == Twist:
+        return PositionOriented(to_convert.linear.x,
+                                to_convert.linear.y,
+                                to_convert.angular.z
+                                )
+    elif type(to_convert) == String:
+        return StrMsg(to_convert)
+    else:
+        raise NotImplementedError()
+
+
+class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface) because super() need to init node
+
+    # {data:fonction associée}
+
+    def __init__(self, node_name="robotSim"):  # TODO : add args
+        rclpy.init()  # (args=args)
         print("rclpy initiated in ros_interface !")
         super().__init__(node_name)
 
-    dataTypeToInterfaceType = {PositionOriented:positionToTwist, StrMsg:strMsgToString}
-    interfaceTypeToDataType = {Twist:TwistToPosition, String:StringToStrMsg}
-
     def start(self, args=None):
-
         pass
 
     def process_com(self):
@@ -52,51 +65,47 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
         self.destroy_node()
         rclpy.shutdown()
 
-    def update_data_continuous(self, name : str, type_msg, get_data_callback, rate : float):
+    def update_data_continuous(self, name: str, dataType: data_type, get_data_callback, rate: float):
         """
 
         :param name:
-        :param type_msg: string (should be an enum) that is used in publish_data
+        :param dataType: string (should be an enum) that is used in publish_data
         :param get_data_callback: returned format should be the one corresponding to type_msg and must be parsable in publish_data
-        :param rate:
+        :param rate: times per second
         :return:
         """
-
-        publisher = self.create_publisher(type_msg, name, 10)        #le 10 est arbitraire et fait référence à un "QoS setting", voir ici https://docs.ros2.org/foxy/api/rclpy/api/node.html#rclpy.node.Node.create_publisher
+        ros_type = get_ros_type(dataType)
+        publisher = self.create_publisher(ros_type, name,
+                                          10)  # le 10 est arbitraire et fait référence à un "QoS setting", voir ici https://docs.ros2.org/foxy/api/rclpy/api/node.html#rclpy.node.Node.create_publisher
         for i in self.publishers:
             print(i.topic)
 
-
-        callback_timer = lambda: self.publish_data(type_msg, publisher, get_data_callback)
+        callback_timer = lambda: self.publish_data(dataType, publisher, get_data_callback)
         self.create_timer(rate, callback_timer)
 
-    def publish_data(self, type_msg, publisher, get_data_callback):
-        msg = type_msg()
-        if type_msg == String:
-            msg.data = str(get_data_callback())
-            self.get_logger().info('Publishing: "%s"' % msg.data)
-        elif type_msg == Twist:
-            to_parse = get_data_callback()
-            msg.linear.x = to_parse[0]
-            msg.linear.y = to_parse[1]
-            msg.angular.z = to_parse[2]
-            self.get_logger().info('Publishing: twist data')
-        else:
-            raise NotImplementedError()
+    def publish_data(self, dataType, publisher, get_data_callback):
+        msg = convert_to_type_ros(get_data_callback)
+        # self.get_logger().info('Publishing: "%s"' % msg.data)
+
+        # self.get_logger().info('Publishing: twist data')
 
         publisher.publish(msg)
 
+    def register_msg_callback(self, name: str, dataType:data_type, set_data_callback):
+        """
 
-    def register_msg_callback(self, name : str, type_msg, get_data_callback):
+        """
+        ros_type = get_ros_type(dataType)
+        set_data = lambda x: set_data_callback(type(x)(x))  # convert from rosType to data_type associated
         self.create_subscription(
-            type_msg,
+            ros_type,
             name,
-            get_data_callback,
-            10 #QOS chelou ?
-            )
+            set_data,
+            10  # QOS chelou ?
+        )
 
     def read_data(self, request, response):
-        #execute request, and do response
+        # execute request, and do response
         pass
 
     """
@@ -104,11 +113,13 @@ class RosInterface(Node):#, Interface): #Keep this order (Node then Interface) b
     d'un publisher
     """
 
+
 def send_garbage_data():
     return randint(1, 10)
+
+
 def main(args=None):
     rclpy.init(args=args)
-
 
     minimal_publisher = RosInterface()
     minimal_publisher.update_data_continuous("test_data", "string", send_garbage_data, 1)
@@ -119,6 +130,7 @@ def main(args=None):
     # (optional - otherwise it will be done automatically)
     minimal_publisher.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == "__main__":
     main()

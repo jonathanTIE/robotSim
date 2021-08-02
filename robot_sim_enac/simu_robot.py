@@ -4,15 +4,15 @@ from enum import Enum
 import sys
 
 INTERFACE = "ROS"
-try:
-    from robot_sim_enac.navigation import Navigation
-    from robot_sim_enac.actuators import Actuators
+
+from robot_sim_enac.data_types import PositionOriented, StrMsg
+from robot_sim_enac.navigation import Navigation
+from robot_sim_enac.actuators import Actuators
     #import messages_pb2 as m
+try:
     from robot_sim_enac.ros_interface import RosInterface
 except ModuleNotFoundError:
-    from navigation import Navigation
-    from actuators import Actuators
-    from local_debug import LocalDebug
+    from robot_sim_enac.local_debug import LocalDebug
     INTEFACE = "CONSOLE"
     #impo as m
 
@@ -24,7 +24,7 @@ class Robot:
         #ODOM_REPORT = 1
         ACTUATORS = 1
 
-    def __init__(self, robot_name, pos_init=(1500, 1000, 0)):
+    def __init__(self, robot_name="robotSim", pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
         self.nav = Navigation(pos_init)
@@ -36,15 +36,16 @@ class Robot:
 
         #COMMUNICATION INIT :
         if(INTEFACE == "CONSOLE"):
-            self.com = LocalDebug("robotSim")
+            print("using console interface - Wasn't launched with ROS")
+            self.com = LocalDebug(robot_name)
         else:
-            self.com = RosInterface("robotSim")
+            self.com = RosInterface(robot_name)
         self.com.start()
-        self.com.register_msg_callback('speed_cmd', Twist, self.nav.set_speed)
-        self.com.register_msg_callback('position_cmd', Twist, self.nav.set_pos_objective)
+        self.com.register_msg_callback('speed_cmd', PositionOriented, self.nav.set_speed)
+        self.com.register_msg_callback('position_cmd', PositionOriented, self.nav.set_pos_objective)
         #self.com.register_msg_callback('actuator_cmd', self.actuators.handle_cmd, Actuators)
 
-        self.com.update_data_continuous("odom_report", Twist, self.get_odom_report, 0.1)
+        self.com.update_data_continuous("odom_report", PositionOriented, self.get_odom_report, 0.1)
 
     def __enter__(self):
         return self
@@ -92,8 +93,11 @@ def main(args=None):
         robot.run()
 
 if __name__ == '__main__':
+    robot = Robot()
+    robot.run()
+    """
     if len(sys.argv) != 2:
-        print("Usage: ./simu_robot.py robot_name")
-        exit(-1)
+        print("Using default name : robot_sim")
     with Robot(sys.argv[1]) as robot:
         robot.run()
+    """

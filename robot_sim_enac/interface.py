@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
+#TODO : mettre à jour interface en fonction de ros interface
 from actuators import Actuators, RWType
-from data_types import PositionOriented, StrMsg
+from robot_sim_enac.data_types import PositionOriented, StrMsg, data_type
 
 SPEED_REG = "SpeedCmd {} (.+) (.+) (.+)"
 POS_REG = "PosCmd {} (.+) (.+)"
@@ -39,7 +40,7 @@ class Interface():
     def stop(self):
         raise NotImplementedError()
 
-    def update_data_continuous(self, name : str, type_msg_str: str, get_data_callback, rate : float):
+    def update_data_continuous(self, name : str, dataType: data_type, get_data_callback, rate : float):
         """
         Send continuously(at a set rate) a certain data supported (string, twist,...)
         :param name: name of the parameter
@@ -49,7 +50,7 @@ class Interface():
         :return:
         """
         raise NotImplementedError()
-    def register_msg_callback(self, callback, service_type):
+    def register_msg_callback(self, name: str, dataType:data_type, set_data_callback):
         """
         Function to call preferably when initialising the simulator,
         a callback function from the simulator is called with the arguments provided from the interface depending on the msg type
