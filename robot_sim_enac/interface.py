@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-#TODO : mettre à jour interface en fonction de ros interface
-from actuators import Actuators, RWType
+#from actuators import Actuators, RWType
 from robot_sim_enac.data_types import PositionOriented, StrMsg, data_type
 
 SPEED_REG = "SpeedCmd {} (.+) (.+) (.+)"
@@ -23,10 +22,6 @@ class Interface():
         in order to communicate with the simulator
     """
 
-
-
-
-
     def __init__(self, robot_name):
         pass
 
@@ -42,7 +37,7 @@ class Interface():
 
     def update_data_continuous(self, name : str, dataType: data_type, get_data_callback, rate : float):
         """
-        Send continuously(at a set rate) a certain data supported (string, twist,...)
+        Send continuously(at a set rate) a certain data supported (in data_types)
         :param name: name of the parameter
         :param type_msg_str: type of the msg, in str ("string", "twist", ...)
         :param get_data_callback: function from the simulator, called to get the latest data
@@ -54,6 +49,7 @@ class Interface():
         """
         Function to call preferably when initialising the simulator,
         a callback function from the simulator is called with the arguments provided from the interface depending on the msg type
+        Use it to process input from other system outside of sim
         exemple : update_speed, SpeedCmd
         :param callback:
         :param service_type:

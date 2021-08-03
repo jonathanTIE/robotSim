@@ -14,7 +14,7 @@ try:
 except ModuleNotFoundError as e:
     print(e)
     from robot_sim_enac.local_debug import LocalDebug
-    INTEFACE = "CONSOLE"
+    INTERFACE = "CONSOLE"
     #impo as m
 
 
@@ -25,7 +25,7 @@ class Robot:
         #ODOM_REPORT = 1
         ACTUATORS = 1
 
-    def __init__(self, robot_name="robotSim", pos_init=(1500, 1000, 0)):
+    def __init__(self, robot_name="robot_sim", pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
         self.nav = Navigation(pos_init)
@@ -36,7 +36,7 @@ class Robot:
         self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
 
         #COMMUNICATION INIT :
-        if(INTEFACE == "CONSOLE"):
+        if(INTERFACE == "CONSOLE"):
             print("using console interface - Wasn't launched with ROS")
             self.com = LocalDebug(robot_name)
         else:
@@ -78,7 +78,7 @@ class Robot:
 
     def get_odom_report(self):
         x, y, theta = self.nav.pos
-        return [x,y,theta]
+        return PositionOriented(x,y,theta)
         
     def run(self):
         while self.com:#.running :
@@ -89,7 +89,10 @@ class Robot:
 
 
 def main(args=None):
-    robot = Robot("robot sim")
+    """
+    entry points for ros
+    """
+    robot = Robot("robot_sim")
     while True:
         robot.run()
 

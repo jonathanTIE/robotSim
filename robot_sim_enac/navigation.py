@@ -2,7 +2,7 @@
 import time
 from math import cos, sin, atan2, sqrt, pi
 from enum import Enum
-from data_types import PositionOriented
+from robot_sim_enac.data_types import PositionOriented
 
 
 

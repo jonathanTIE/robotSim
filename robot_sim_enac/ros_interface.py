@@ -3,8 +3,8 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 
-import interface
-from data_types import data_type, PositionOriented, StrMsg
+import robot_sim_enac.interface
+from robot_sim_enac.data_types import data_type, PositionOriented, StrMsg
 
 # from interface import Interface
 from random import randint
@@ -30,6 +30,8 @@ def convert_to_type_ros(to_convert):
         converted = String()
         converted.data = str(to_convert)
     else:
+        print(to_convert)
+        print(type(to_convert))
         raise NotImplementedError()
     return converted
 
@@ -84,7 +86,7 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
         self.create_timer(rate, callback_timer)
 
     def publish_data(self, dataType, publisher, get_data_callback):
-        msg = convert_to_type_ros(get_data_callback)
+        msg = convert_to_type_ros(get_data_callback())
         # self.get_logger().info('Publishing: "%s"' % msg.data)
 
         # self.get_logger().info('Publishing: twist data')
@@ -103,6 +105,7 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
             set_data,
             10  # QOS chelou ?
         )
+        self.get_logger().info('subscribing from robotSim : ' + name)
 
     def read_data(self, request, response):
         # execute request, and do response
