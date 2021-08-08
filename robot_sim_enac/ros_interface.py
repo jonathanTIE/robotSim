@@ -1,17 +1,51 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Pose, Quaternion
+from nav_msgs.msg import Odometry
 
 import robot_sim_enac.interface
-from robot_sim_enac.data_types import data_type, PositionOriented, StrMsg
+from robot_sim_enac.data_types import data_type, PositionOriented, Speed, PositionOrientedTimed, StrMsg
 
 # from interface import Interface
 from random import randint
+import numpy as np
 
+def euler_to_quaternion(yaw, pitch, roll) -> Quaternion:
+    """
+    Re-implementation stolen from https://stackoverflow.com/questions/53033620/how-to-convert-euler-angles-to-quaternions-and-get-the-same-euler-angles-back-fr
+    couldn't find tf2.transformations to do it using ros2 libraries...
+    :param yaw:
+    :param pitch:
+    :param roll:
+    :return:
+    """
+    quat = Quaternion()
+    quat.x = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
+    quat.y = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2)
+    quat.z = np.cos(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2) - np.sin(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2)
+    quat.y = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
+    return quat
+
+def speed_to_twist(speed : Speed):
+    converted = Twist()
+    converted.linear.x = speed.vx
+    converted.angular.z = speed.vz
+    return converted
+
+def posoriented_to_pose(posOriented : PositionOriented):
+    converted = Pose()
+    converted.position.x = posOriented.x
+    converted.position.y = posOriented.y
+    converted.orientation = euler_to_quaternion(posOriented.theta, 0, 0)
+    return converted
 
 def get_ros_type(dataType):
-    if dataType == PositionOriented:
+    if dataType == PositionOrientedTimed: #PositionOrientedTimed inherit from PositionOriented, so PosOrienTimed must be placed before
+        return Odometry
+    elif dataType == PositionOriented:
+        return Pose
+    elif dataType == Speed:
         return Twist
     elif dataType == StrMsg:
         return String
@@ -21,27 +55,49 @@ def get_ros_type(dataType):
 
 def convert_to_type_ros(to_convert):
     converted = None
-    if type(to_convert) == PositionOriented:
-        converted = Twist()
-        converted.linear.x = to_convert.x
-        converted.linear.y = to_convert.y
-        converted.angular.z = to_convert.theta
+
+    if type(to_convert) == PositionOrientedTimed: #PositionOrientedTimed inherit from PositionOriented, so PosOrienTimed must be placed before
+        converted = Odometry()
+        converted.twist.twist = speed_to_twist(to_convert)
+        converted.pose.pose = posoriented_to_pose(to_convert)
+        converted.header.stamp = to_convert.stamp
+    elif type(to_convert) == PositionOriented:
+        converted = posoriented_to_pose(to_convert)
+    elif type(to_convert) == Speed:
+        converted = speed_to_twist(to_convert)
     elif type(to_convert) == StrMsg:
         converted = String()
         converted.data = str(to_convert)
+
     else:
         print(to_convert)
         print(type(to_convert))
         raise NotImplementedError()
+
     return converted
 
 
 def convert_to_data_type(to_convert):
     if type(to_convert) == Twist:
-        return PositionOriented(to_convert.linear.x,
-                                to_convert.linear.y,
-                                to_convert.angular.z
-                                )
+        return Speed(
+            to_convert.linear.x,
+            to_convert.angular.z
+        )
+    elif type(to_convert) == Pose:
+        return PositionOriented(
+            to_convert.position.x,
+            to_convert.position.y,
+            to_convert.orientation.z
+        )
+    elif type(to_convert) == Odometry:
+        return PositionOrientedTimed(
+            to_convert.position.x,
+            to_convert.position.y,
+            to_convert.orientation.z,
+            to_convert.linear.x,
+            to_convert.angular.z,
+            to_convert.stamp
+        )
     elif type(to_convert) == String:
         return StrMsg(to_convert)
     else:

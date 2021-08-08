@@ -5,11 +5,12 @@ import sys
 
 INTERFACE = "ROS"
 
-from robot_sim_enac.data_types import PositionOriented, StrMsg
+from robot_sim_enac.data_types import PositionOriented, Speed, StrMsg, PositionOrientedTimed
 from robot_sim_enac.navigation import Navigation
 from robot_sim_enac.actuators import Actuators
     #import messages_pb2 as m
 try:
+    #raise ModuleNotFoundError() #TODO : a retirer
     from robot_sim_enac.ros_interface import RosInterface
 except ModuleNotFoundError as e:
     print(e)
@@ -42,11 +43,11 @@ class Robot:
         else:
             self.com = RosInterface(robot_name)
         self.com.start()
-        self.com.register_msg_callback('speed_cmd', PositionOriented, self.nav.set_speed)
-        self.com.register_msg_callback('position_cmd', PositionOriented, self.nav.set_pos_objective)
+        self.com.register_msg_callback('speed_cmd', Speed, self.nav.set_speed)
+        #self.com.register_msg_callback('position_cmd', PositionOriented, self.nav.set_pos_objective)
         #self.com.register_msg_callback('actuator_cmd', self.actuators.handle_cmd, Actuators)
 
-        self.com.update_data_continuous("odom_report", PositionOriented, self.get_odom_report, 0.1)
+        self.com.update_data_continuous("odom", PositionOrientedTimed, self.get_odom_report, 0.1)
 
     def __enter__(self):
         return self
@@ -78,7 +79,8 @@ class Robot:
 
     def get_odom_report(self):
         x, y, theta = self.nav.pos
-        return PositionOriented(x,y,theta)
+        vx, vy, vz = self.nav.speed
+        return PositionOrientedTimed(x,y,theta, vx, vz, time.time())
         
     def run(self):
         while self.com:#.running :

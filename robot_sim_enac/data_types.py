@@ -1,4 +1,7 @@
 #A importer : PositionOriented, StrMsg
+import numpy as np
+
+
 
 class data_type():
     def __init__(self):
@@ -8,11 +11,25 @@ class data_type():
 
 class PositionOriented(data_type):
     def __init__(self, x, y, theta):
-        super().__init__()
         self.x = x
         self.y = y
         self.theta = theta
     pass
 
+class Speed(data_type):
+    def __init__(self, vx, vz):
+        self.vx = vx
+        self.vz = vz
+
+class PositionOrientedTimed(PositionOriented, Speed):
+    def __init__(self, x, y, theta, vx, vz, stamp): #vx -> speed in x axis,  stamp -> timestamp
+        PositionOriented.__init__(self, x, y, theta)
+        Speed.__init__(self, vx, vz)
+        self.stamp = stamp
+
+#WARNING : StrMsg doesn't have an init and can't be used
 class StrMsg(data_type):
+    """
+    !! don't use without an init, it's useless !!
+    """
     pass

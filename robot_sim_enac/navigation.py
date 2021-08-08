@@ -2,7 +2,7 @@
 import time
 from math import cos, sin, atan2, sqrt, pi
 from enum import Enum
-from robot_sim_enac.data_types import PositionOriented
+from robot_sim_enac.data_types import PositionOriented, Speed
 
 
 
@@ -34,8 +34,8 @@ class Navigation:
         self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
         self.last_distance_to_obj = 0
     
-    def set_speed(self, speed: PositionOriented):
-        self.speed = (speed.x, speed.y, speed.theta)
+    def set_speed(self, speed: Speed):
+        self.speed = (speed.vx, 0, speed.vz)
         self.mode = Navigation.NavMode.SPEED
     
     def set_pos_objective(self, pos: PositionOriented):

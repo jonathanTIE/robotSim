@@ -1,4 +1,4 @@
-from robot_sim_enac.data_types import data_type
+from robot_sim_enac.data_types import data_type, PositionOrientedTimed
 from robot_sim_enac.interface import Interface
 import asyncio
 import sched
@@ -33,7 +33,11 @@ class LocalDebug(Interface):
 
 
     def update_data_continuous(self, name : str, dataType: data_type, get_data_callback, rate : float):
-        print(get_data_callback())
+        if type(get_data_callback()) == PositionOrientedTimed:
+            g = get_data_callback()
+            print(g.x, g.y, g.theta, g.vx, g.vz, g.stamp)
+        else:
+            print(get_data_callback())
         self.schedulder.enter(rate, 3, self.update_data_continuous, (name, dataType, get_data_callback, rate))
 
     def register_msg_callback(self, name: str, dataType:data_type, set_data_callback):
