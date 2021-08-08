@@ -98,7 +98,13 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
 
         """
         ros_type = get_ros_type(dataType)
-        set_data = lambda x: set_data_callback(type(x)(x))  # convert from rosType to data_type associated
+
+        def set_data(x):
+            a = set_data_callback(convert_to_data_type(x))
+            self.get_logger().info(str(x))
+            self.get_logger().info(str(convert_to_data_type(x)))
+            self.get_logger().info(str(type(set_data_callback)))
+        #set_data = lambda x: set_data_callback(convert_to_data_type(x))#set_data_callback(type(x)(x))  # convert from rosType to data_type associated
         self.create_subscription(
             ros_type,
             name,
