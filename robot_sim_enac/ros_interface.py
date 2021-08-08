@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from builtin_interfaces.msg import Time
 from geometry_msgs.msg import Twist, Pose, Quaternion
 from nav_msgs.msg import Odometry
 
@@ -29,14 +30,14 @@ def euler_to_quaternion(yaw, pitch, roll) -> Quaternion:
 
 def speed_to_twist(speed : Speed):
     converted = Twist()
-    converted.linear.x = speed.vx
-    converted.angular.z = speed.vz
+    converted.linear.x = float(speed.vx)
+    converted.angular.z = float(speed.vz)
     return converted
 
 def posoriented_to_pose(posOriented : PositionOriented):
     converted = Pose()
-    converted.position.x = posOriented.x
-    converted.position.y = posOriented.y
+    converted.position.x = float(posOriented.x)
+    converted.position.y = float(posOriented.y)
     converted.orientation = euler_to_quaternion(posOriented.theta, 0, 0)
     return converted
 
@@ -52,29 +53,6 @@ def get_ros_type(dataType):
     else:
         return NotImplementedError()
 
-
-def convert_to_type_ros(to_convert):
-    converted = None
-
-    if type(to_convert) == PositionOrientedTimed: #PositionOrientedTimed inherit from PositionOriented, so PosOrienTimed must be placed before
-        converted = Odometry()
-        converted.twist.twist = speed_to_twist(to_convert)
-        converted.pose.pose = posoriented_to_pose(to_convert)
-        converted.header.stamp = to_convert.stamp
-    elif type(to_convert) == PositionOriented:
-        converted = posoriented_to_pose(to_convert)
-    elif type(to_convert) == Speed:
-        converted = speed_to_twist(to_convert)
-    elif type(to_convert) == StrMsg:
-        converted = String()
-        converted.data = str(to_convert)
-
-    else:
-        print(to_convert)
-        print(type(to_convert))
-        raise NotImplementedError()
-
-    return converted
 
 
 def convert_to_data_type(to_convert):
@@ -123,6 +101,34 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
         self.destroy_node()
         rclpy.shutdown()
 
+    def convert_to_type_ros(self, to_convert: data_type): #present in this class to allow timestamp
+        """
+        for PositionOrientedTimed / Odometry msg, it change the timestamp to current timestamp from node
+        :param to_convert:
+        :return:
+        """
+        converted = None
+
+        if type(to_convert) == PositionOrientedTimed:  # PositionOrientedTimed inherit from PositionOriented, so PosOrienTimed must be placed before
+            converted = Odometry()
+            converted.twist.twist = speed_to_twist(to_convert)
+            converted.pose.pose = posoriented_to_pose(to_convert)
+            converted.header.stamp = self.get_clock().now().to_msg()
+        elif type(to_convert) == PositionOriented:
+            converted = posoriented_to_pose(to_convert)
+        elif type(to_convert) == Speed:
+            converted = speed_to_twist(to_convert)
+        elif type(to_convert) == StrMsg:
+            converted = String()
+            converted.data = str(to_convert)
+
+        else:
+            print(to_convert)
+            print(type(to_convert))
+            raise NotImplementedError()
+
+        return converted
+
     def update_data_continuous(self, name: str, dataType: data_type, get_data_callback, rate: float):
         """
 
@@ -142,7 +148,7 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
         self.create_timer(rate, callback_timer)
 
     def publish_data(self, dataType, publisher, get_data_callback):
-        msg = convert_to_type_ros(get_data_callback())
+        msg = self.convert_to_type_ros(get_data_callback())
         # self.get_logger().info('Publishing: "%s"' % msg.data)
 
         # self.get_logger().info('Publishing: twist data')
