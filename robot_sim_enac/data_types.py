@@ -22,6 +22,9 @@ class Speed(data_type):
         self.vz = vz
 
 class PositionOrientedTimed(PositionOriented, Speed):
+    """
+    Unit in mm, ROS in m, theta in radian, stamp in ?? (not used inside the sim, only for ros)
+    """
     def __init__(self, x, y, theta, vx, vz, stamp): #vx -> speed in x axis,  stamp -> timestamp
         PositionOriented.__init__(self, x, y, theta)
         Speed.__init__(self, vx, vz)
