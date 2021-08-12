@@ -26,7 +26,7 @@ class Robot:
         #ODOM_REPORT = 1
         ACTUATORS = 1
 
-    def __init__(self, robot_name="robot_sim", pos_init=(-1200, 0, 0)):
+    def __init__(self, robot_name="robot_sim", pos_init=(500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
         self.nav = Navigation(pos_init)
@@ -43,12 +43,12 @@ class Robot:
         else:
             self.com = RosInterface(robot_name)
         self.com.start()
-        self.com.register_msg_callback('speed_cmd', Speed, self.nav.set_speed)
+        self.com.register_msg_callback('cmd_vel', Speed, self.nav.set_speed)
         #self.com.register_msg_callback('position_cmd', PositionOriented, self.nav.set_pos_objective)
         #self.com.register_msg_callback('actuator_cmd', self.actuators.handle_cmd, Actuators)
 
         #self.com.update_data_continuous("odom", PositionOrientedTimed, self.get_odom_report, 0.1)
-        self.com.update_data_continuous("tf", PositionOriented, self.get_transform_report, 0.1)
+        self.com.update_data_continuous("tf", PositionOriented, self.get_transform_report, 0.03) #0.03 - ~30hz
 
     def __enter__(self):
         return self

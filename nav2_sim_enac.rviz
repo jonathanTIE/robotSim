@@ -7,11 +7,13 @@ Panels:
         - /Global Options1
         - /Status1
         - /Grid1/Offset1
-        - /Odometry1
         - /Odometry1/Topic1
         - /Odometry1/Shape1
         - /TF1
-        - /TF1/Status1
+        - /TF1/Frames1
+        - /TF1/Frames1/base_link1
+        - /TF1/Frames1/map1
+        - /TF1/Frames1/odom1
         - /TF1/Tree1
         - /TF1/Tree1/map1
         - /TF1/Tree1/map1/odom1
@@ -97,7 +99,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: false
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -117,7 +119,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /odom
-      Value: true
+      Value: false
     - Class: rviz_default_plugins/TF
       Enabled: true
       Frame Timeout: 15
@@ -165,7 +167,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Fixed Frame: map
-    Frame Rate: 1
+    Frame Rate: 10
   Name: root
   Tools:
     - Class: rviz_default_plugins/Interact
@@ -203,7 +205,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: 0.019999999552965164
       Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -213,11 +215,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 228.26939392089844
+      Scale: 183.63609313964844
       Target Frame: map
       Value: TopDownOrtho (rviz_default_plugins)
-      X: 0.10960250347852707
-      Y: 0.35072800517082214
+      X: -0.5368921160697937
+      Y: 0.6173614263534546
     Saved: ~
 Window Geometry:
   Displays:
@@ -237,5 +239,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1639
-  X: 657
-  Y: 154
+  X: 89
+  Y: 133

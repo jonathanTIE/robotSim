@@ -70,7 +70,7 @@ def convert_to_data_type(to_convert):
     if type(to_convert) == Twist:
         return Speed(
             to_convert.linear.x * 1000,
-            to_convert.angular.z * 1000
+            to_convert.angular.z
         )
     elif type(to_convert) == TFMessage:
         raise NotImplementedError("check rotation is it correct")
@@ -197,14 +197,16 @@ class RosInterface(Node):  # , Interface): #Keep this order (Node then Interface
     def register_msg_callback(self, name: str, dataType:data_type, set_data_callback):
         """
 
+        :param name:
+        :param dataType:
+        :param set_data_callback: parameters of this function callback must be the same as the one used to instantiate the dataType
+        :return:
         """
         ros_type = get_ros_type(dataType)
 
         def set_data(x):
             a = set_data_callback(convert_to_data_type(x))
             self.get_logger().info(str(x))
-            self.get_logger().info(str(convert_to_data_type(x)))
-            self.get_logger().info(str(type(set_data_callback)))
         #set_data = lambda x: set_data_callback(convert_to_data_type(x))#set_data_callback(type(x)(x))  # convert from rosType to data_type associated
         self.create_subscription(
             ros_type,
