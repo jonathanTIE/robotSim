@@ -1,8 +1,7 @@
-
-    """
-    Serial to use in local, with another program in the same computer.
-    for debug/testing purpose with the simulator & a program in local (IHM, speed, PID,..
-    """
+"""
+Serial to use in local, with another program in the same computer.
+for debug/testing purpose with the simulator & a program in local (IHM, speed, PID,..
+"""
 
 from interface import Interface
 import os, pty, serial

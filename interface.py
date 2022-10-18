@@ -21,6 +21,7 @@ class Interface():
         in order to communicate with the simulator
     """
     def __init__(self, robot_name):
+        self.robot_name = robot_name
         pass
 
     
@@ -33,23 +34,16 @@ class Interface():
     def stop(self):
         raise NotImplementedError()
 
-    def update_data_continuous(self, name : str, type_msg_str: str, get_data_callback, rate : float):
-        """
-        Send continuously(at a set rate) a certain data supported (string, twist,...)
-        :param name: name of the parameter
-        :param type_msg_str: type of the msg, in str ("string", "twist", ...)
-        :param get_data_callback: function from the simulator, called to get the latest data
-        :param rate: rate in time per seconds
-        :return:
-        """
+    def send(self, topic, type, msg): 
         raise NotImplementedError()
-    def register_msg_callback(self, callback, service_type):
+        
+    def register_msg_callback(self, topic_name, callback):
         """
         Function to call preferably when initialising the simulator,
         a callback function from the simulator is called with the arguments provided from the interface depending on the msg type
         exemple : update_speed, SpeedCmd
+        :param topic_name:
         :param callback:
-        :param service_type:
         :return:
         """
         raise NotImplementedError()

@@ -4,10 +4,10 @@ from enum import Enum
 import sys
 from navigation import Navigation
 from actuators import Actuators
-#import messages_pb2 as m
-from ros_interface import RosInterface
-
-from geometry_msgs.msg import Twist
+from interface import Interface
+from ecal_interface import EcalInterface
+import messages_pb2 as m
+#from ros_interface import RosInterface
 
 BUS = "127.255.255.255:2010"
 
@@ -19,7 +19,7 @@ class Robot:
         ODOM_REPORT = 1
         ACTUATORS = 2
 
-    def __init__(self, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
+    def __init__(self, interface: Interface, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
         self.nav = Navigation(pos_init)
@@ -28,16 +28,14 @@ class Robot:
         self.modules_update_time = {}
         self.register_module(Robot.Modules.NAV, 0.05, self.nav.update)
         self.register_module(Robot.Modules.ACTUATORS, 1, self.update_actuators)
+        self.register_module(Robot.Modules.ODOM_REPORT, 0.1, self.update_odom_report)
 
         #COMMUNICATION INIT :
-        self.com = RosInterface("robotSim")
+        self.com = interface
         self.com.start()
-        self.com.register_msg_callback('speed_cmd', Twist, self.nav.set_speed)
-        self.com.register_msg_callback('position_cmd', Twist, self.nav.set_pos_objective)
+        self.com.register_msg_callback('speed_cmd', self.nav.set_speed)
+        self.com.register_msg_callback('position_cmd', self.nav.set_pos_objective)
         #self.com.register_msg_callback('actuator_cmd', self.actuators.handle_cmd, Actuators)
-
-        self.com.update_data_continuous("odom_report", Twist, self.get_odom_report, 100)
-
     def __enter__(self):
         return self
 
@@ -69,17 +67,26 @@ class Robot:
     def get_odom_report(self):
         x, y, theta = self.nav.pos
         return [x,y,theta]
+
+    def update_odom_report(self, dt):
+        speed = m.PosCommand()
+        odom_report = self.get_odom_report()
+        speed.x = odom_report[0]
+        speed.y = odom_report[0]
+        speed.theta = odom_report[2]
+        self.com.send("position", m.PosCommand, speed)
         
     def run(self):
-        while self.com:#.running :
+        while self.com:
             self.update()
             self.com.process_com()
             time.sleep(0.01)
-        #self.com.stop ()
+        # self.com.stop ()
+
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: ./simu_robot.py robot_name")
-        exit(-1)
-    with Robot(sys.argv[1]) as robot:
+    # if len(sys.argv) != 2:
+    #    print("Usage: ./simu_robot.py robot_name")
+    #    exit(-1)
+    with Robot(EcalInterface("aaaa"), "aaaa") as robot:
         robot.run()
