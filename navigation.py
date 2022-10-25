@@ -140,7 +140,7 @@ class HolonomicNavigation(Navigation):
         """
         Navigation.__init__(self, pos_init)
         self.L = length_wheel_center
-        self.forward = Forward.LEFT #Holonomic side use when needing to go "forward"
+        self.forward = Forward.LEFT  # Holonomic side use when needing to go "forward"
 
     @staticmethod
     def get_closest_forward(cur_angle: float, target_angle: float)->Forward:
@@ -221,9 +221,9 @@ class HolonomicNavigation(Navigation):
         x, y, theta = self.pos
         v_wheel1, v_wheel2, v_wheel3 = self.speed
         
-        vtheta = 1/(3*self.L)*(v_wheel1 + v_wheel2 + v_wheel3)
+        vtheta = (1/(3*self.L))*(v_wheel1 + v_wheel2 + v_wheel3)
         # take the average angle of the robot during the last period
-        theta_pos_avr = theta + vtheta * dt/2
+        theta_pos_avr = theta + vtheta * dt/2 # TODO : test
         
         # convert speed from robot reference system to table reference system
         vx0 = (-2/3)*cos(theta_pos_avr) * v_wheel1 \

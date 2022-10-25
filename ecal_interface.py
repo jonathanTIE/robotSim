@@ -45,7 +45,6 @@ class EcalInterface(Interface):
     def send(self, topic:str, type, msg):
         if topic not in self.publishers: 
             self.publishers[topic] = ProtoPublisher(topic, type)
-        print(topic, type,msg)
         self.publishers[topic].send(msg)
 
     def register_msg_callback(self, service_name, callback):

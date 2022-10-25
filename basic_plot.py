@@ -38,6 +38,7 @@ def on_pos_update(new_pos: m.PosCommand):
         color=['black', 'red', 'green'], scale=15)
     fig.canvas.draw() 
     fig.canvas.flush_events()
+    print([x, y, theta])
     
     
 

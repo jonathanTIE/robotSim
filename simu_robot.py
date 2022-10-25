@@ -2,7 +2,7 @@
 import time
 from enum import Enum
 import sys
-from navigation import Navigation
+from navigation import Navigation, HolonomicNavigation
 from actuators import Actuators
 from interface import Interface
 from ecal_interface import EcalInterface
@@ -19,10 +19,10 @@ class Robot:
         ODOM_REPORT = 1
         ACTUATORS = 2
 
-    def __init__(self, interface: Interface, robot_name, bus=BUS, pos_init=(1500, 1000, 0)):
+    def __init__(self, interface: Interface, is_holonomic=True, bus=BUS, pos_init=(1500, 1000, 0)):
         self.actuators = Actuators()
         #self.com = IvyInterface(robot_name, self.actuators, bus)
-        self.nav = Navigation(pos_init)
+        self.nav = HolonomicNavigation(pos_init) if is_holonomic else Navigation(pos_init)
         self.modules_period = {}
         self.modules_update = {}
         self.modules_update_time = {}
