@@ -132,11 +132,11 @@ class HolonomicNavigation(Navigation):
     #Source : https://joshi-bharat.github.io/blog/2016/kinematic-analysis-of-holonomic-robot/
 
 
-    def __init__(self, pos_init, length_wheel_center=0.1):
+    def __init__(self, pos_init, length_wheel_center=150.0):
         """_summary_
 
         Args:
-            length_wheel_center (float, optional): In meters. Defaults to 0.1.
+            length_wheel_center (float, optional): In milimeters. Defaults to 150.
         """
         Navigation.__init__(self, pos_init)
         self.L = length_wheel_center
