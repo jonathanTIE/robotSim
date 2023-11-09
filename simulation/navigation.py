@@ -32,8 +32,9 @@ class Navigation:
         INITIAL_TURN = 0
         CRUISE = 1
         FINAL_TURN = 2
+        STATIONNARY = 3
     
-    def __init__(self, pos_init, max_linear_speed = 0.5, max_angular_speed = 200.0):
+    def __init__(self, pos_init, max_linear_speed = 200.0, max_angular_speed = 200.0):
         self.pos = pos_init
         self.pos_obj = (0, 0, None)
         self.speed = (0, 0, 0)
@@ -89,7 +90,6 @@ class Navigation:
         if self.pos_control_state == Navigation.PosControlState.FINAL_TURN:
             if theta_obj is None or abs(theta_diff) < 0.1:
                 self.speed = (0, 0, 0)
-                self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
                 self.mode = Navigation.NavMode.SPEED
             else:
                 self.speed = (0, 0, vtheta)
@@ -140,6 +140,7 @@ class HolonomicNavigation(Navigation):
         """
         Navigation.__init__(self, pos_init)
         self.L = length_wheel_center
+        self.theta_offset = pi/6 #(angle from normal heading to 'right' heading)
         self.forward = Forward.LEFT  # Holonomic side use when needing to go "forward"
 
     @staticmethod
@@ -163,54 +164,56 @@ class HolonomicNavigation(Navigation):
             return Forward.RIGHT
     
     def update_pos_control(self):
+        if self.pos_control_state == Navigation.PosControlState.STATIONNARY:
+            return
 
         x, y, theta = self.pos
         x_obj, y_obj, theta_obj = self.pos_obj
-        route = atan2(y_obj - y, x_obj - x)
+        route = atan2(y_obj - y, x_obj - x) - self.theta_offset
 
         #determine angle (and one of the three orientation) to get to position
         if self.pos_control_state == Navigation.PosControlState.FINAL_TURN and theta_obj is not None:
             theta_diff = theta_obj - theta
-        elif self.pos_control_state == Navigation.PosControlState.INITIAL_TURN:
+        else: # self.pos_control_state == Navigation.PosControlState.INITIAL_TURN:
             theta_diff = route - theta
-            self.forward = HolonomicNavigation.get_closest_forward(theta, theta_obj)
-            theta_diff = theta_obj - self.forward.value
-        else:
-            theta_diff = theta_obj - self.forward.value
 
         theta_diff = normalize_angle(theta_diff)
         distance = sqrt((x_obj - x)**2 + (y_obj - y)**2)
         
         #determine angular speed direction    
         vtheta = 0
-        if theta_diff > 0.1:
-            vtheta = self.max_ang_speed
-        elif theta_diff < -0.1:
-            vtheta = -self.max_ang_speed
+        if theta_diff > 0.02:
+            if theta_diff > 0.2:
+                vtheta = self.max_ang_speed
+            else:
+                vtheta = self.max_ang_speed/3
+        elif theta_diff < -0.02:
+            if theta_diff < -0.2:
+                vtheta = -self.max_ang_speed
+            else:
+                vtheta = -self.max_ang_speed/3
 
         
         #either turn to the route, go forward in the current orientation, or turn to final angle
         if(self.pos_control_state == Navigation.PosControlState.INITIAL_TURN):
             self.speed = (vtheta, vtheta, vtheta)
-            if abs(theta_diff) < 0.1:
+            if abs(theta_diff) < 0.02:
                 self.pos_control_state = Navigation.PosControlState.CRUISE
                 self.last_distance_to_obj = distance
         if(self.pos_control_state == Navigation.PosControlState.CRUISE):
-            if(distance > self.last_distance_to_obj):
+            if(distance > self.last_distance_to_obj or distance < 20):
                 self.speed = (0, 0, 0)
                 self.pos_control_state = Navigation.PosControlState.FINAL_TURN
             else:
-                if self.forward == Forward.LEFT: 
-                    self.speed = (self.max_lin_speed, -self.max_lin_speed, 0)
-                elif self.forward == Forward.BOTTOM:
-                    self.speed = (0, self.max_lin_speed, -self.max_lin_speed)
-                else: #RIGHT
-                    self.speed = (-self.max_lin_speed, 0, self.max_lin_speed)
+                offset = 0.0
+                if abs(theta_diff) > 0.02: #trajectory correction
+                    offset = 50.0
+                self.speed = (-self.max_lin_speed + offset, 0, self.max_lin_speed)
                 self.last_distance_to_obj = distance
         if self.pos_control_state == Navigation.PosControlState.FINAL_TURN:
-            if theta_obj is None or abs(theta_diff) < 0.1:
+            if theta_obj is None or abs(theta_diff) < 0.05 or abs(theta_diff) > 3.09:
                 self.speed = (0, 0, 0)
-                self.pos_control_state = Navigation.PosControlState.INITIAL_TURN
+                self.pos_control_state = Navigation.PosControlState.STATIONNARY
                 self.mode = Navigation.NavMode.SPEED
             else:
                 self.speed = (vtheta, vtheta, vtheta)

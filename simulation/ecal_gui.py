@@ -29,17 +29,22 @@ class NodePlotter():
         self.scale = scale
 
     def gen_dyn_txt(self, obj_pos, stamp):
+        x_txt = obj_pos[0] * self.scale
+        y_txt = 2000 * self.scale - obj_pos[1] * self.scale
         return text_pb.TextAnnotation(timestamp=timestamp_pb2.Timestamp(seconds=int(stamp/1000000)),
-            position=pt_pb.Point2(x=obj_pos[0] * self.scale, y=(obj_pos[1] * self.scale)-20),
-            text=f"{obj_pos[0]} {obj_pos[1]}",
+            position=pt_pb.Point2(x=x_txt, y=y_txt+20),
+            text=f"{obj_pos[0]:.1f} {obj_pos[1]:.1f}",
             font_size=10.0,
             text_color=self.color,
             background_color=color_pb.Color(r=0, g=0, b=0, a=100)
             )
     def gen_circle(self, obj_pos, stamp):
+        x_draw = obj_pos[0] * self.scale
+        y_draw = 2000 * self.scale - obj_pos[1] * self.scale
+        print(x_draw)
         return circle_pb.CircleAnnotation(
             timestamp=timestamp_pb2.Timestamp(seconds=int(stamp/1000000)),
-            position=pt_pb.Point2(x=obj_pos[0] * self.scale, y=obj_pos[1] * self.scale),
+            position=pt_pb.Point2(x=x_draw, y=y_draw),
             thickness=1,
             diameter=50,
             fill_color=self.half_transp_color,
@@ -47,9 +52,11 @@ class NodePlotter():
             )
 
     def gen_fix_txt(self, obj_pos, stamp):
+        x_txt = self.fixed_txt_pos[0] * self.scale
+        y_txt = 2000 * self.scale - self.fixed_txt_pos[1] * self.scale
         return text_pb.TextAnnotation(timestamp=timestamp_pb2.Timestamp(seconds=int(stamp/1000000)),
-            position=pt_pb.Point2(x=self.fixed_txt_pos[0] * self.scale, y=self.fixed_txt_pos[1] * self.scale),
-            text=f"{obj_pos[0]} {obj_pos[1]}",
+            position=pt_pb.Point2(x=x_txt, y=y_txt),
+            text=f"{obj_pos[0]:.1f} {obj_pos[1]:.1f}",
             font_size=21.0,
             text_color=self.color,
             background_color=color_pb.Color(r=0, g=0, b=0, a=255)
@@ -57,7 +64,7 @@ class NodePlotter():
     
     def gen_heading(self, obj_pos, stamp):
         x_draw = (obj_pos[0]+50*cos(obj_pos[2])) * self.scale
-        y_draw = (obj_pos[1]+50*sin(obj_pos[2])) * self.scale
+        y_draw = 2000 * self.scale - (obj_pos[1]+50*sin(obj_pos[2])) * self.scale
         return circle_pb.CircleAnnotation(
             timestamp=timestamp_pb2.Timestamp(seconds=int(stamp/1000000)),
             position=pt_pb.Point2(x=x_draw, y=y_draw),
@@ -75,7 +82,7 @@ class Display():
         self.pos = ProtoSubscriber("get_pose", Position)
         self.pos.set_callback(self.draw_robot)
 
-        self.robot_plotter = NodePlotter([0,0], color_pb.Color(r=0, g=0, b=255, a=255))
+        self.robot_plotter = NodePlotter([0,-20], color_pb.Color(r=0, g=0, b=255, a=255))
         self.scale = scale #pixels per millimeter
 
     def send_map_pic(self):
