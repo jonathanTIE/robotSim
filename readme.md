@@ -9,7 +9,7 @@ Nécessite eCAL, protobuf, matplotlib, flask
 
 ## Usage
 
-Lancer `simu_robot.py` . Paramètre par défaut : navigation différentielle.
+Lancer `__simu_robot.py` . Paramètre par défaut : navigation différentielle.
 Pour visualiser le robot sur matplotlib en temps réel, lancer `basic_plot.py`
 Pour contrôler en vitesse, lancer `basic_teleop.py` et aller sur http://127.0.0.1:5000/
 ## Drivetrain (base roulante)

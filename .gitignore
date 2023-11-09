@@ -1,2 +1,5 @@
 /.vscode
 /__pycache__
+bridge/__pycache__
+bridge/server/__pycache__
+simulation/__pycache__
