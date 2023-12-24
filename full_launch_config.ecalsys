@@ -19,7 +19,7 @@
             <start_stop>
                 <target>DESKTOP-9P09591</target>
                 <runner_id>1</runner_id>
-                <algo>C:\Users\Jonathan\Documents\robotSim\simulation\lua_interpreter.py</algo>
+                <algo>C:\Users\Jonathan\Documents\robotSim\lua\lua_interpreter.py</algo>
                 <working_dir></working_dir>
                 <launch_order>0</launch_order>
                 <timeout>0</timeout>

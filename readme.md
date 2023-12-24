@@ -4,8 +4,10 @@
 
 ## Installation :
 
+Installer eCAL
+
 TODO : requirements.txt
-Nécessite eCAL, protobuf, matplotlib, flask
+PYTHON : Nécessite eCAL, protobuf, matplotlib, flask
 
 ## Usage
 
