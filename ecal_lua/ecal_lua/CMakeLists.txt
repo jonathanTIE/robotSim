@@ -9,9 +9,10 @@
 
 # Add source to this project's executable.
 #add_executable (ecal_lua ${PROTO_SRCS} ${PROTO_HDRS} "ecal_lua.cpp" "ecal_lua.h"  "ecal_functions.cpp" "ecal_functions.h" )
-add_executable (ecal_lua  "ecal_lua.cpp" "ecal_lua.h"  "ecal_functions.cpp" "ecal_functions.h" )
+add_executable (ecal_lua  "ecal_lua.cpp" "ecal_lua.h"  "ecal_com.cpp" "ecal_com.h")
+add_executable (protogen "protogen.cpp" "protogen.h")
 
-PROTOBUF_TARGET_CPP(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../../simulation/ ${protobuf_files})
+PROTOBUF_TARGET_CPP(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/proto_messages ${protobuf_files})
 
 target_link_libraries(${PROJECT_NAME}
 
@@ -19,6 +20,7 @@ target_link_libraries(${PROJECT_NAME}
   protobuf::libprotobuf
 
 )
+
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ecal_lua PROPERTY CXX_STANDARD 20)
 endif()

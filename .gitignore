@@ -4,6 +4,7 @@ bridge/__pycache__
 bridge/server/__pycache__
 simulation/__pycache__
 *.vs
+build
 ecal_lua/build
 ecal_lua/lua/.github
 ecal_lua/out/build/x64-Debug

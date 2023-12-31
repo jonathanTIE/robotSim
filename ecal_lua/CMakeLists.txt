@@ -12,7 +12,7 @@ endif()
 project ("ecal_lua")
 
 set(CMAKE_CXX_STANDARD 14)
-
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -22,8 +22,7 @@ find_package(Protobuf REQUIRED)
 
 # Protobuf
 set(protobuf_files 
-    ${CMAKE_CURRENT_SOURCE_DIR}/../simulation/messages.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/ecal_lua/proto_messages/game_actions.proto
 )
-
 # Include sub-projects.
 add_subdirectory ("ecal_lua")
