@@ -7,7 +7,7 @@
 
 #include "lua.hpp"
 
-#include "ecal_com.h"
+#include "game_actions_ecal.h"
 
 #define LUA_ON_INIT_FUNCTION        "on_init"
 #define LUA_ON_RUN_FUNCTION         "on_run"
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
     while (eCAL::Ok())
     {
-
+        ecal_com.service_client.Call("lua_test_FALSE", "");
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
