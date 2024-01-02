@@ -9,14 +9,14 @@
 
 # Add source to this project's executable.
 #add_executable (ecal_lua ${PROTO_SRCS} ${PROTO_HDRS} "ecal_lua.cpp" "ecal_lua.h"  "ecal_functions.cpp" "ecal_functions.h" )
-add_executable (ecal_lua  "ecal_lua.cpp" "game_actions_ecal.cpp" "game_actions_ecal.h" "game_actions_lua.h" "game_actions_lua.cpp")
+add_executable (ecal_lua "ecal_lua.cpp" "game_actions_lua.h" "game_actions_lua.cpp" "game_actions.h" "game_actions.cpp" "simu_avoidance.h" "simu_avoidance.cpp" "simu_navigation.h" "simu_navigation.cpp" "simu_core.h" "simu_core.cpp")
 add_executable (protogen "protogen.cpp" "protogen.h")
 
 PROTOBUF_TARGET_CPP(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/proto_messages ${protobuf_files})
 
 target_link_libraries(${PROJECT_NAME}
 
-  eCAL::core
+  eCAL::core 
   protobuf::libprotobuf
 
 )
