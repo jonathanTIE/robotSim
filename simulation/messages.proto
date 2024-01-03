@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package messages;
-
-message Position {
-    float x = 1; // in meters
-    float y = 2; // in meters
-    float theta = 3; // in radians
-  }
