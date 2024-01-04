@@ -11,27 +11,25 @@ PYTHON : Nécessite eCAL, protobuf, matplotlib, (flask)
 
 ## Usage
 
-# Compilation protobuf
+# Compilation
 
-## TODO/Warning :
+## Si besoin de mettre à jour "l'API" du robot / protobuf
 
-Le game_actions.proto compilé par protogen n'est pas mis automatiquement dans ecal_lua/proto_messages
+Récupérer le dernier fichier `game_actions.h` depuis [felixzero/escrocs/actions/](https://github.com/felixzero/escrocs/blob/master/code/main_board/src/actions/game_actions.h)
 
-## reste des instructions 
-Pour compiler les messages protobuf:
+(Linux) Compiler le projet pour executer protogen.cpp (TODO : Le projet ne se compile pas s'il manque game_actions.proto, éviter de le supprimer en workaround)
 
-Récupérer le dernier fichier `game_actions.h` depuis https://github.com/felixzero/escrocs/blob/master/code/main_board/src/actions/game_actions.h
-(Linux) Compiler ecal_lua
 (Windows) Executer protogen.exe
 
-Pour C++, il faut compiler tout ecal_lua pour ajouter les protobuf.
-Pour Python :
+-> game_actions.proto est regénéré
+-> les pb.h sont générés lors de la compilation du projet (=runner.cpp)
+
+Pour générer les pb2.py (Python):
 
 Depuis /robotSim :
-	protoc --python_out=./simulation --proto_path=**/PATH/TO** game_actions.proto
 
-Pour Windows, le chemin devrait être ./out/build/x64-debug/ecal_lua/game_actions.proto
-	protoc --python_out=./simulation --proto_path=./ecal_lua/out/build/x64-debug/ecal_lua game_actions.proto
+	protoc --python_out=./gui ./proto/game_actions.proto
+
 
 
 

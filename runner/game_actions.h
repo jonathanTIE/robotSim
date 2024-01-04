@@ -52,6 +52,9 @@
 #define SLEEP_ARGUMENTS \
     X_FLOAT_ARGS(delay)
 #define SLEEP_OUTPUT // nothing
+#define GET_TIME_ARGUMENTS // nothing
+#define GET_TIME_OUTPUT \
+	X_FLOAT_OUTPUT(time)
 
 #define DEFINE_GAME_ACTION_FUNCTIONS \
     X(set_pose, game_action_set_pose, SET_POSE_ARGUMENTS, SET_POSE_OUTPUT) \
@@ -64,7 +67,8 @@
     X(reset_stepper, game_action_reset_stepper, RESET_STEPPER_ARGUMENTS, RESET_STEPPER_OUTPUT) \
     X(move_servo, game_action_move_servo, MOVE_SERVO_ARGUMENTS, MOVE_SERVO_OUTPUT) \
     X(get_button, game_action_get_button, GET_BUTTON_ARGUMENTS, GET_BUTTON_OUTPUT) \
-    X(sleep, game_action_sleep, SLEEP_ARGUMENTS, SLEEP_OUTPUT)
+    X(sleep, game_action_sleep, SLEEP_ARGUMENTS, SLEEP_OUTPUT) \
+    X(get_time, game_action_get_time, GET_TIME_ARGUMENTS, GET_TIME_OUTPUT)
 
 // Define data parameter structures
 #define GAME_ACTION_ARGUMENTS_STRUCT_NAME(action_name) game_action_##action_name##_input_data_t

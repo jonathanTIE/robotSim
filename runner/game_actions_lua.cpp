@@ -57,7 +57,6 @@
 
 DEFINE_GAME_ACTION_FUNCTIONS
 #undef X
-#include <iostream>
 
 void register_lua_functions(lua_State* L)
 {

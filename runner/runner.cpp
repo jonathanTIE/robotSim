@@ -12,7 +12,7 @@
 #define LUA_ON_INIT_FUNCTION        "on_init"
 #define LUA_ON_RUN_FUNCTION         "on_run"
 #define LUA_ON_END_FUNCTION         "on_end"
-#define RUN_DURATION               90000 //90s
+#define RUN_DURATION               900 //90s
 
 bool lua_ready_to_run = false;
 bool is_running = false;
@@ -26,6 +26,12 @@ uint64_t time() {
 }
 
 int lua_loader(lua_State* L, const char* path) {
+    std::cout << "Loading lua file: " << path << std::endl;
+    L = luaL_newstate();
+    luaL_openlibs(L);
+
+    register_lua_functions(L);
+
     if (luaL_loadfile(L, path) != LUA_OK)
     {
         std::cout << "Error loading file: " << lua_tostring(L, -1) << std::endl;
@@ -38,8 +44,9 @@ int lua_loader(lua_State* L, const char* path) {
     lua_call(L, 0, 0);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    lua_getglobal(L, LUA_ON_RUN_FUNCTION);
     lua_ready_to_run = true;
+    is_running = false;
+    is_end = false;
     return 0;
 }
 
@@ -47,11 +54,8 @@ int main(int argc, char** argv)
 {
     //Lua init
     lua_State* L;
-    L = luaL_newstate();
-    luaL_openlibs(L);
 
-    register_lua_functions(L);
-    lua_loader(L, (char *) "D:/Sync/Code/Robotique/CDR2024/robotSim/ecal_lua/ecal_lua/main.lua");
+    //lua_loader(L, (char *) "D:/Sync/Code/Robotique/CDR2024/robotSim/ecal_lua/ecal_lua/main.lua");
 
     //eCAL init
     eCAL::Initialize(argc, argv, "lua_interpreter");
