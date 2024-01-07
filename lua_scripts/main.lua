@@ -1,5 +1,7 @@
 termination = false
 
+function sleep(delay) 
+	get_time()
 function on_init() 
 	print("init")
 	set_pump(1, true)

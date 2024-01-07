@@ -17,8 +17,15 @@ def on_textbox_submit(text):
     lua_path_pub.send(text)
 
 ##### Matplotlib setup #####
+    
+#Setup ax for robot
 fig, ax = plt.subplots()
 ax.figure.subplots_adjust(bottom=0.11)
+ax.set_xlim(    [0.0, 3000.0]    )
+ax.set_ylim(    [0.0, 2000.0]    )
+robot_marker = ax.plot(0, 0, marker=(3, 0, 0), markersize=10, linestyle='None') 
+
+#setup text axes
 axbox = fig.add_axes([0.1, 0.01, 0.8, 0.05])
 initial_text = "D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main.lua"
 text_box = TextBox(axbox, 'lua_input_path', initial=initial_text, textalignment='right')
@@ -26,21 +33,24 @@ axbox.annotate('PAS DE HOT RELOAD -> Restart runner)', xy=(0, 0.5), color='red')
 
 ##### Matplotlib functions #####
 def update_robot_plot(x: float, y:float, theta:float):
-    ax.clear()
-    ax.plot(x, y, marker=(3, 0, theta), markersize=10, linestyle='None')
-    ax.set_xlim(    [0.0, 3000.0]    )
-    ax.set_ylim(    [0.0, 2000.0]    )
+    global robot_marker
+    robot_marker[0].remove()
+    robot_marker = ax.plot(x, y, marker=(3, 0, theta), markersize=10, linestyle='None')
     plt.draw()
-
-##### eCAL functions #####
-def on_pose(topic_name, msg: get_pose_out, time):
-    update_robot_plot(msg.x, msg.y, msg.theta)
 
 ##### eCAL setup #####
 ecal_core.initialize([], "robotsim_gui")
 lua_path_pub = StringPublisher("lua_path_loader")
 pose_sub = ProtoSubscriber("get_pose", get_pose_out)
 sleep(0.5)
+
+##### eCAL functions #####
+def on_pose(topic_name, msg: get_pose_out, time):
+    update_robot_plot(msg.x, msg.y, msg.theta)
+
+##### LUA Loader #####
+    #../luascripts/path_settings.lua
+
 
 
 if __name__ == "__main__":

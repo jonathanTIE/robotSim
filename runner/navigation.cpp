@@ -2,10 +2,7 @@
 
 #include <thread>
 
-uint64_t temp_time() {
-	using namespace std::chrono;
-	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
+
 
 Navigation::Navigation() {
 
@@ -28,6 +25,7 @@ pose_t Navigation::get_current_pose()
 
 void Navigation::overwrite_current_pose(pose_t* pose)
 {
+	current_pose = *pose;
 }
 
 void Navigation::stop_motion()

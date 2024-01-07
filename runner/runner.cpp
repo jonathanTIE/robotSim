@@ -67,13 +67,18 @@ int main(int argc, char** argv)
     sub.AddReceiveCallback(std::bind(callback, std::placeholders::_2));
 
     //Simulation init
-    pose_t pose = { 100.0, 1000.0 ,0 };
+    pose_t pose = { 100.0, 1000.0 ,0.0001 };
     init(&pose);
 
     while (eCAL::Ok())
     {
         //Lua 
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        if (lua_ready_to_run) {
+            lua_getglobal(L, "main_loop");
+
+        }
+        /*
         if (lua_ready_to_run && !is_running) {
             lua_getglobal(L, LUA_ON_RUN_FUNCTION);
             lua_call(L, 0, 0);
@@ -85,6 +90,7 @@ int main(int argc, char** argv)
 			lua_call(L, 0, 0);
             is_end = true;
 		}
+        */
 
         //Simulation 
         update(50);

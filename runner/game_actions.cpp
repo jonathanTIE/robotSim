@@ -1,4 +1,5 @@
 #include "game_actions.h"
+#include "game_actions_lua.h"
 #include "simu_core.h"
 #include <stdexcept>
 #include <thread>
@@ -108,6 +109,6 @@ struct GAME_ACTION_OUTPUT_STRUCT_NAME(sleep) game_action_sleep(struct GAME_ACTIO
 struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_time) game_action_get_time(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(get_time) args)
 {
 	struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_time) result;
-    result.time = 0; // time();
+    result.time = get_time();
 	return result;
 }

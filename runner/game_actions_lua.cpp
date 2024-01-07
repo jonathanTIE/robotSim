@@ -1,5 +1,11 @@
 #include "game_actions_lua.h"
 
+
+uint64_t get_time() {
+     using namespace std::chrono;
+     return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
 #define X(action_name, function, ARGUMENTS, OUTPUT) \
         static int game_action_ ## action_name ## _lua(lua_State *L) \
         { \
