@@ -12,7 +12,7 @@
 #define LUA_ON_INIT_FUNCTION        "on_init"
 #define LUA_ON_RUN_FUNCTION         "on_run"
 #define LUA_ON_END_FUNCTION         "on_end"
-#define RUN_DURATION               900 //90s
+#define RUN_DURATION               900 //0.90s currently
 
 bool lua_ready_to_run = false;
 bool is_running = false;
@@ -25,9 +25,11 @@ uint64_t time() {
     return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-int lua_loader(lua_State* L, const char* path) {
+int lua_loader(lua_State* &L, const char* path) {
     std::cout << "Loading lua file: " << path << std::endl;
-    L = luaL_newstate();
+    lua_State* new_L;
+    new_L = luaL_newstate();
+    L = new_L;
     luaL_openlibs(L);
 
     register_lua_functions(L);
@@ -55,8 +57,6 @@ int main(int argc, char** argv)
     //Lua init
     lua_State* L;
 
-    //lua_loader(L, (char *) "D:/Sync/Code/Robotique/CDR2024/robotSim/ecal_lua/ecal_lua/main.lua");
-
     //eCAL init
     eCAL::Initialize(argc, argv, "lua_interpreter");
     eCAL::string::CSubscriber<std::string> sub("lua_path_loader");
@@ -66,10 +66,14 @@ int main(int argc, char** argv)
     };
     sub.AddReceiveCallback(std::bind(callback, std::placeholders::_2));
 
+    //Simulation init
+    pose_t pose = { 100.0, 1000.0 ,0 };
+    init(&pose);
 
     while (eCAL::Ok())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        //Lua 
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (lua_ready_to_run && !is_running) {
             lua_getglobal(L, LUA_ON_RUN_FUNCTION);
             lua_call(L, 0, 0);
@@ -81,6 +85,9 @@ int main(int argc, char** argv)
 			lua_call(L, 0, 0);
             is_end = true;
 		}
+
+        //Simulation 
+        update(50);
 
     }
 

@@ -10,6 +10,8 @@ typedef struct {
 
 class Navigation {
 public:
+	Navigation();
+	void init();
 	void set_pose(pose_t* pose);
 	pose_t get_current_pose();
 	void overwrite_current_pose(pose_t* pose);
@@ -19,7 +21,7 @@ public:
 
 private:
 	int64_t lapsed_time;
-	eCAL::protobuf::CPublisher<game_actions::get_pose_args> pose_pub;
+	eCAL::protobuf::CPublisher<game_actions::get_pose_out> pose_pub;
 	pose_t target;
 	pose_t current_pose;
 };

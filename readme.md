@@ -30,6 +30,9 @@ Depuis /robotSim :
 
 	protoc --python_out=./gui ./proto/game_actions.proto
 
+# TODO
+
+- Implémenter un "hot reload" du script lua. (envoyer un msg sur lua_path_loader supprime le lua_state actuel et en crée un nouveau)
 
 
 
