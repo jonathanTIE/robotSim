@@ -6,6 +6,7 @@
 
 struct GAME_ACTION_OUTPUT_STRUCT_NAME(set_pose) game_action_set_pose(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(set_pose) args)
 {
+    std::cout << "setting pose" << std::endl;
     pose_t target{};
     target.x = args.x;
     target.y = args.y;
@@ -47,6 +48,13 @@ struct GAME_ACTION_OUTPUT_STRUCT_NAME(is_motion_done) game_action_is_motion_done
 {
     struct GAME_ACTION_OUTPUT_STRUCT_NAME(is_motion_done) result;
     result.motion_done = nav.is_motion_done();
+    return result;
+}
+
+struct GAME_ACTION_OUTPUT_STRUCT_NAME(is_blocked) game_action_is_blocked(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(is_blocked) args)
+{
+    struct GAME_ACTION_OUTPUT_STRUCT_NAME(is_blocked) result;
+    result.motion_done = nav.is_blocked();
     return result;
 }
 
@@ -106,9 +114,28 @@ struct GAME_ACTION_OUTPUT_STRUCT_NAME(sleep) game_action_sleep(struct GAME_ACTIO
     return result;
 }
 
-struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_time) game_action_get_time(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(get_time) args)
+
+struct GAME_ACTION_OUTPUT_STRUCT_NAME(print) game_action_print(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(print) args)
 {
-	struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_time) result;
-    result.time = get_time();
-	return result;
+    std::cout << args.message << std::endl;
+    struct GAME_ACTION_OUTPUT_STRUCT_NAME(print) result;
+    return result;
+}
+
+struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_us_readings) game_action_get_us_readings(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(get_us_readings) args)
+{
+    struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_us_readings) result;
+    throw std::exception("Not implemented get_us_readings for simulation");
+    return result;
+}
+
+struct GAME_ACTION_OUTPUT_STRUCT_NAME(scan_channels) game_action_scan_channels(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(scan_channels) args)
+{
+    bool channels[10] = {false};
+    for (int i = 0; i < 10; ++i) {
+        channels[i] = args.channel_mask & (1 << i);
+    }
+    throw std::exception("Not implemented scan_channels for simulation");
+    struct GAME_ACTION_OUTPUT_STRUCT_NAME(scan_channels) result;
+    return result;
 }

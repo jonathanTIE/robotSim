@@ -49,5 +49,7 @@ target_link_libraries(${PROJECT_NAME}
 
 )
 
+include_directories(../lua_scripts)
+
 add_subdirectory(lua)
 target_link_libraries(runner lua_static)

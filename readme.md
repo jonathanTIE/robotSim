@@ -2,12 +2,16 @@
 
 # Utilisation :
 
+Pour mettre à jour le fichier lua unique, utiliser amalgamage.py :
+
+	& C:/Users/Jonathan/anaconda3/envs/robot_sim/python.exe d:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/amalgamage.py D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main2.lua
+
 ## Installation :
 
 Installer eCAL
 
 TODO : requirements.txt
-PYTHON : Nécessite eCAL, protobuf, matplotlib, (flask)
+PYTHON : Nécessite eCAL, protobuf, matplotlib, (flask), pysimplegui
 
 ## Usage
 

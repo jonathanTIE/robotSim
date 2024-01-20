@@ -45,6 +45,7 @@ void Protogen::generate_content() {
 	#define X_FLOAT_ARGS(x) cur_stream << "float " << # x << " = " << i << ";\n"; i++;
 	#define X_INT_ARGS(x) cur_stream << "int32 " << # x << " = " << i << ";\n"; i++;
 	#define X_BOOL_ARGS(x) cur_stream << "bool " << # x << " = " << i << ";\n"; i++;
+	#define X_STR_ARGS(x) cur_stream << "string " << # x << " = " << i << ";\n"; i++;
 	#define X_FLOAT_OUTPUT(x) cur_stream << "float " << # x << " = " << i << ";\n"; i++;
 	#define X_INT_OUTPUT(x) cur_stream << "int32 " << # x << " = " << i << ";\n"; i++;
 	#define X_BOOL_OUTPUT(x) cur_stream << "bool " << # x << " = " << i << ";\n"; i++;

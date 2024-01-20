@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <thread>
+#include <filesystem>
 
 #include "lua.hpp"
 
@@ -43,7 +44,7 @@ int lua_loader(lua_State* &L, const char* path, bool is_reversed) {
         std::cout << "Error running file: " << lua_tostring(L, -1) << std::endl;
     }
     lua_getglobal(L, LUA_ON_INIT_FUNCTION);
-    lua_pushboolean(L, *((int*)is_reversed));
+    lua_pushboolean(L, is_reversed);
 
     if (lua_pcall(L, 1, LUA_MULTRET, 0) != LUA_OK) {
         std::cout << "Lua error on_init: " << lua_tostring(L, -1) << std::endl;
@@ -63,6 +64,7 @@ int main(int argc, char** argv)
     eCAL::Initialize(argc, argv, "lua_interpreter");
     eCAL::string::CSubscriber<std::string> sub("lua_path_loader");
     eCAL::string::CSubscriber<std::string> sub_side("side");
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     //Var inits
     bool is_reversed = false;
@@ -92,6 +94,7 @@ int main(int argc, char** argv)
     init(&pose);
 
     //TODO : temp
+    std::filesystem::current_path("D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts"); //prevent module import problem
     lua_loader(L, "D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main2.lua", is_reversed);
 
     while (eCAL::Ok())
@@ -111,6 +114,10 @@ int main(int argc, char** argv)
             }
             else {
                 lua_Integer sleep_time = lua_tointeger(L, -1);
+                if(sleep_time == -1) {
+                    std::cout << "end of script" << std::endl;
+                    break;
+                }
                 std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
                 update(sleep_time);
             }

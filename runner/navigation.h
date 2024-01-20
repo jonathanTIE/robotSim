@@ -17,6 +17,7 @@ public:
 	void overwrite_current_pose(pose_t* pose);
 	void stop_motion();
 	bool is_motion_done();
+	bool is_blocked();
 	void update(int dt_ms);
 
 private:

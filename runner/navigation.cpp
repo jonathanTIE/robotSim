@@ -26,6 +26,7 @@ pose_t Navigation::get_current_pose()
 void Navigation::overwrite_current_pose(pose_t* pose)
 {
 	current_pose = *pose;
+	update(0); //force update to send the new pose through eCAL
 }
 
 void Navigation::stop_motion()
@@ -33,6 +34,11 @@ void Navigation::stop_motion()
 }
 
 bool Navigation::is_motion_done()
+{
+	return false;
+}
+
+bool Navigation::is_blocked()
 {
 	return false;
 }
