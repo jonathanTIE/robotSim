@@ -1,3 +1,4 @@
+local path_settings = require("path_settings")
 local utils = require("utils")
 local machine = require("statemachine")
 
@@ -22,6 +23,10 @@ moved = false
 function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
+    path = utils.get_shortest_path(path_settings.edges, "INI", "S6")
+    for i=1, #path do
+        print(path[i])
+    end
     print("init done ! ")
 end
 

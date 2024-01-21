@@ -1,66 +1,48 @@
-import matplotlib.pyplot as plt
-from matplotlib.widgets import TextBox
-
+import PySimpleGUI as sg
+import graph
 
 import ecal.core.core as ecal_core
 from ecal.core.publisher import StringPublisher
 from ecal.core.subscriber import ProtoSubscriber
 from proto.game_actions_pb2 import get_pose_out
 
-from time import sleep
+#INCHES_SIZE_PLOT = (4, 2) # TODO : make it settable easily
+MATPLOTLIB_SIZE = (750, 500)
 
-#### CONSTANTS  #####
+#TODO - UNIMPLEMENTED OFFSET 
 ROBOT_ANGLE_OFFSET = 0
 
-def on_textbox_submit(text):
-    print("submitted")
-    lua_path_pub.send(text)
-
-##### Matplotlib setup #####
-    
-#Setup ax for robot
-fig, ax = plt.subplots()
-ax.figure.subplots_adjust(bottom=0.11)
-ax.set_xlim(    [0.0, 3000.0]    )
-ax.set_ylim(    [0.0, 2000.0]    )
-robot_marker = ax.plot(0, 0, marker=(3, 0, 0), markersize=10, linestyle='None') 
-
-#setup text axes
-axbox = fig.add_axes([0.1, 0.01, 0.8, 0.05])
-initial_text = "D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main.lua"
-text_box = TextBox(axbox, 'lua_input_path', initial=initial_text, textalignment='right')
-axbox.annotate('PAS DE HOT RELOAD -> Restart runner)', xy=(0, 0.5), color='red') 
-
-##### Matplotlib functions #####
-def update_robot_plot(x: float, y:float, theta:float):
-    global robot_marker
-    robot_marker[0].remove()
-    robot_marker = ax.plot(x, y, marker=(3, 0, theta), markersize=10, linestyle='None')
-    plt.draw()
-
-##### eCAL setup #####
+### setup ECAL ####
 ecal_core.initialize([], "robotsim_gui")
 lua_path_pub = StringPublisher("lua_path_loader")
 pose_sub = ProtoSubscriber("get_pose", get_pose_out)
-sleep(0.5)
 
-##### eCAL functions #####
 def on_pose(topic_name, msg: get_pose_out, time):
-    update_robot_plot(msg.x, msg.y, msg.theta)
+    graph.update_robot_plot(msg.x, msg.y, msg.theta)
 
-##### LUA Loader #####
-    #../luascripts/path_settings.lua
+pose_sub.set_callback(on_pose)
 
+### GUI SETUP ###
+sg.theme('DarkGrey2')
 
+textbox = sg.Input(default_text="D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main.lua",
+                   size = (100, 20),
+                   key='lua_path_input',)
+layout = [[],
+        [sg.Canvas(size=MATPLOTLIB_SIZE, key='-CANVAS-')],
+        [textbox, sg.Button('set_lua', key='TESTER')]]
 
-if __name__ == "__main__":
-    ##### CB setup #####
-    pose_sub.set_callback(on_pose)
-    text_box.on_submit(on_textbox_submit)
+window = sg.Window('RobotSim - E.S.C.Ro.C.S 2024', layout, resizable=True, finalize=True, element_justification='center')
 
+#graph.fig.set_size_inches(INCHES_SIZE_PLOT[0], INCHES_SIZE_PLOT[1])
+graph.draw_figure(window['-CANVAS-'].TKCanvas)
 
-    plt.show()
+while True:
+    event, values = window.read()
 
-    while ecal_core.ok():
-        sleep(1.0)
-    ecal_core.finalize()
+    if event == sg.WIN_CLOSED or event == 'Exit':
+        break
+    if event == "TESTER":
+        lua_path_pub.send(values['lua_path_input'])
+
+window.close()
