@@ -1,5 +1,8 @@
 local utils = {}
 
+
+-- QUEUE FUNCTIONS --
+
 Queue = {}
 function Queue.new ()
     return {first = 0, last = -1}
@@ -77,29 +80,8 @@ function utils.get_shortest_path(edges_table, start_vertice, end_vertice)
             end
         end
     end
-
-
-
-    --[[
-    while not Queue.is_empty(queue) do
-        local path = Queue.pop(queue)
-        local last_vertice = path[#path]
-        if last_vertice == end_vertice then
-            return path
-        end
-        print(type(last_vertice))
-        print(last_vertice)
-
-
-        for _,vertice in pairs(edges_table[last_vertice]) do
-            if not explored[vertice] then
-                explored[vertice] = true
-                Queue.push(queue, vertice)
-            end
-        end
-    end
-    ]]
 end
 
+-- TIME FUNCTIONS --
 
 return utils

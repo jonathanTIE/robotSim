@@ -1,14 +1,8 @@
 local path_settings = require("path_settings")
 local utils = require("utils")
-local machine = require("statemachine")
+local machine = require("statemachine") -- Library
+local states = require("states") -- Logic
 
-local movement_state = machine.create( {
-    initial = "done",
-    events = {
-        { name = "move", from = "done", to = "moving" },
-        { name = "stop", from = "moving", to = "done" },
-    }
-})
 
 MATCH_DURATION_MS = 87000
 DEFAULT_LOOP_PERIOD_MS = 50
@@ -19,14 +13,15 @@ main_loop = nil -- coroutine/thread
 is_right = nil -- boolean
 start_time = nil
 
+
 moved = false
 function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
-    path = utils.get_shortest_path(path_settings.edges, "INI", "S6")
-    for i=1, #path do
-        print(path[i])
-    end
+    --path = utils.get_shortest_path(path_settings.edges, "INI", "S6")
+    --for i=1, #path do
+    --    print(path[i])
+    --end
     print("init done ! ")
 end
 
