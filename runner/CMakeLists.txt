@@ -33,7 +33,7 @@ set(protobuf_files
 
 # Add source to this project's executable.
 #add_executable (ecal_lua ${PROTO_SRCS} ${PROTO_HDRS} "ecal_lua.cpp" "ecal_lua.h"  "ecal_functions.cpp" "ecal_functions.h" )
-add_executable (runner "runner.cpp" "navigation.h" "navigation.cpp" "game_actions_lua.h" "game_actions_lua.cpp" "game_actions.h" "game_actions.cpp" "simu_avoidance.h" "simu_avoidance.cpp"  "simu_core.h" "simu_core.cpp")
+add_executable (runner "runner.cpp" "navigation.h" "navigation.cpp" "game_actions_lua.h" "game_actions_lua.cpp" "game_actions.h" "game_actions.cpp" "simu_core.h" "simu_core.cpp")
 add_executable (protogen "protogen.cpp" "protogen.h")
 
 PROTOBUF_TARGET_CPP(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/../proto ${protobuf_files})

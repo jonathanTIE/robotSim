@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     eCAL::Initialize(argc, argv, "lua_interpreter");
     eCAL::string::CSubscriber<std::string> sub("lua_path_loader");
     eCAL::string::CSubscriber<std::string> sub_side("side");
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    eCAL::protobuf::CSubscriber<game_actions::get_us_readings_out> sub_us("get_us_readings");
 
     //Var inits
     bool is_reversed = false;
@@ -89,9 +89,27 @@ int main(int argc, char** argv)
 	};
     sub_side.AddReceiveCallback(std::bind(callback_side, std::placeholders::_2));
 
+    auto callback_us = [&](const game_actions::get_us_readings_out& us_readings) {
+        us_channels[0] = us_readings.us1();
+        us_channels[1] = us_readings.us2();
+        us_channels[2] = us_readings.us3();
+        us_channels[3] = us_readings.us4();
+        us_channels[4] = us_readings.us5();
+        us_channels[5] = us_readings.us6();
+        us_channels[6] = us_readings.us7();
+        us_channels[7] = us_readings.us8();
+        us_channels[8] = us_readings.us9();
+        us_channels[9] = us_readings.us10();
+    };
+
+    sub_us.AddReceiveCallback(std::bind(callback_us, std::placeholders::_2));
+
     //Simulation init
     pose_t pose = { 100.0, 1000.0 ,0.0001 };
     init(&pose);
+
+    //Makes sure that all publisher had time to init (including the one in nav)
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     //TODO : temp
     std::filesystem::current_path("D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts"); //prevent module import problem
@@ -110,7 +128,8 @@ int main(int argc, char** argv)
 
             //arg is the timestamp in ms, receive the sleep time to wait before calling the coroutine again
             if (lua_pcall(L, 1, 1, 0) != LUA_OK) { //It either returns an error message or the sleep time
-                std::cout << "error on main_loop: " << lua_tostring(L, -1) << std::endl;
+                std::cout << "(sleep 1s) error on main_loop: " << lua_tostring(L, -1) << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
             else {
                 lua_Integer sleep_time = lua_tointeger(L, -1);

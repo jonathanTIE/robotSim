@@ -25,6 +25,7 @@ pose_t Navigation::get_current_pose()
 
 void Navigation::overwrite_current_pose(pose_t* pose)
 {
+	std::cout << "overwriting current pose" << pose->x << " " << pose->y << std::endl;
 	current_pose = *pose;
 	update(0); //force update to send the new pose through eCAL
 }
@@ -35,6 +36,11 @@ void Navigation::stop_motion()
 
 bool Navigation::is_motion_done()
 {
+	if (fabs(current_pose.x - target.x) < 0.01 && 
+	fabs(current_pose.y - target.y) < 0.01 && 
+	fabs(current_pose.theta -target.theta) < 0.01 ) {
+		return true;
+	}
 	return false;
 }
 
@@ -50,7 +56,13 @@ void Navigation::update(int dt_ms) {
 		current_pose = target;
 	}
 	game_actions::get_pose_out pose_out;
-	pose_out.set_x(current_pose.x);
+	if (current_pose.x > -0.01 && current_pose.x < 0.01) {
+		pose_out.set_x(0.001f); // Prevent protobuf python eCAL bug  TypeError: memoryview: a bytes-like object is required, not 'NoneType'
+		// Not an issue because the robot will never be at 0 0 0
+	}
+	else {
+		pose_out.set_x(current_pose.x);
+	}
 	pose_out.set_y(current_pose.y);
 	pose_out.set_theta(current_pose.theta);
 	pose_pub.Send(pose_out);

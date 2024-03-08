@@ -74,6 +74,7 @@ def set_vinyle_img(path):
 def update_robot_plot(x: float, y:float, theta:float):
     global robot_marker
     robot_marker[0].remove()
+    print(f"update robot plot {x} {y} {theta}")
     robot_marker = ax.plot(x, y, marker=(3, 0, theta), markersize=10, linestyle='None', color='blue')
     plt.draw()
 

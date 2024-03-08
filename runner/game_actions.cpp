@@ -125,7 +125,16 @@ struct GAME_ACTION_OUTPUT_STRUCT_NAME(print) game_action_print(struct GAME_ACTIO
 struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_us_readings) game_action_get_us_readings(struct GAME_ACTION_ARGUMENTS_STRUCT_NAME(get_us_readings) args)
 {
     struct GAME_ACTION_OUTPUT_STRUCT_NAME(get_us_readings) result;
-    throw std::exception("Not implemented get_us_readings for simulation");
+    result.us1 = us_channels[0];
+    result.us2 = us_channels[1];
+    result.us3 = us_channels[2];
+    result.us4 = us_channels[3];
+    result.us5 = us_channels[4];
+    result.us6 = us_channels[5];
+    result.us7 = us_channels[6];
+    result.us8 = us_channels[7];
+    result.us9 = us_channels[8];
+    result.us10 = us_channels[9];
     return result;
 }
 
@@ -135,7 +144,7 @@ struct GAME_ACTION_OUTPUT_STRUCT_NAME(scan_channels) game_action_scan_channels(s
     for (int i = 0; i < 10; ++i) {
         channels[i] = args.channel_mask & (1 << i);
     }
-    throw std::exception("Not implemented scan_channels for simulation");
+    std::cout << "Scanning channels - unimplemented selections " << std::endl;
     struct GAME_ACTION_OUTPUT_STRUCT_NAME(scan_channels) result;
     return result;
 }

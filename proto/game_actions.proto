@@ -44,6 +44,13 @@ message is_motion_done_out {
 bool motion_done = 1;
 }
 
+message is_blocked_args {
+}
+
+message is_blocked_out {
+bool motion_done = 1;
+}
+
 message set_pump_args {
 int32 channel = 1;
 bool value = 2;
@@ -90,5 +97,35 @@ float delay = 1;
 }
 
 message sleep_out {
+}
+
+message print_args {
+string message = 1;
+}
+
+message print_out {
+}
+
+message get_us_readings_args {
+}
+
+message get_us_readings_out {
+int32 us1 = 1;
+int32 us2 = 2;
+int32 us3 = 3;
+int32 us4 = 4;
+int32 us5 = 5;
+int32 us6 = 6;
+int32 us7 = 7;
+int32 us8 = 8;
+int32 us9 = 9;
+int32 us10 = 10;
+}
+
+message scan_channels_args {
+int32 channel_mask = 1;
+}
+
+message scan_channels_out {
 }
 

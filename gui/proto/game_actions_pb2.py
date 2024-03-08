@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='game_actions',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x18proto/game_actions.proto\x12\x0cgame_actions\"O\n\rset_pose_args\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\x12\x19\n\x11perform_detection\x18\x04 \x01(\x08\"\x0e\n\x0cset_pose_out\"\x0f\n\rget_pose_args\"3\n\x0cget_pose_out\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\":\n\x13overwrite_pose_args\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\"\x14\n\x12overwrite_pose_out\"\x12\n\x10stop_motion_args\"\x11\n\x0fstop_motion_out\"\x15\n\x13is_motion_done_args\")\n\x12is_motion_done_out\x12\x13\n\x0bmotion_done\x18\x01 \x01(\x08\"/\n\rset_pump_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x08\"\x0e\n\x0cset_pump_out\"C\n\x11move_stepper_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\x0e\n\x06target\x18\x02 \x01(\x05\x12\r\n\x05speed\x18\x03 \x01(\x02\"\x12\n\x10move_stepper_out\"4\n\x12reset_stepper_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05\"\x13\n\x11reset_stepper_out\"1\n\x0fmove_servo_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05\"\x10\n\x0emove_servo_out\"\"\n\x0fget_button_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\" \n\x0eget_button_out\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x1b\n\nsleep_args\x12\r\n\x05\x64\x65lay\x18\x01 \x01(\x02\"\x0b\n\tsleep_outb\x06proto3'
+  serialized_pb=b'\n\x18proto/game_actions.proto\x12\x0cgame_actions\"O\n\rset_pose_args\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\x12\x19\n\x11perform_detection\x18\x04 \x01(\x08\"\x0e\n\x0cset_pose_out\"\x0f\n\rget_pose_args\"3\n\x0cget_pose_out\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\":\n\x13overwrite_pose_args\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\"\x14\n\x12overwrite_pose_out\"\x12\n\x10stop_motion_args\"\x11\n\x0fstop_motion_out\"\x15\n\x13is_motion_done_args\")\n\x12is_motion_done_out\x12\x13\n\x0bmotion_done\x18\x01 \x01(\x08\"\x11\n\x0fis_blocked_args\"%\n\x0eis_blocked_out\x12\x13\n\x0bmotion_done\x18\x01 \x01(\x08\"/\n\rset_pump_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x08\"\x0e\n\x0cset_pump_out\"C\n\x11move_stepper_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\x0e\n\x06target\x18\x02 \x01(\x05\x12\r\n\x05speed\x18\x03 \x01(\x02\"\x12\n\x10move_stepper_out\"4\n\x12reset_stepper_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05\"\x13\n\x11reset_stepper_out\"1\n\x0fmove_servo_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05\"\x10\n\x0emove_servo_out\"\"\n\x0fget_button_args\x12\x0f\n\x07\x63hannel\x18\x01 \x01(\x05\" \n\x0eget_button_out\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x1b\n\nsleep_args\x12\r\n\x05\x64\x65lay\x18\x01 \x01(\x02\"\x0b\n\tsleep_out\"\x1d\n\nprint_args\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x0b\n\tprint_out\"\x16\n\x14get_us_readings_args\"\x98\x01\n\x13get_us_readings_out\x12\x0b\n\x03us1\x18\x01 \x01(\x05\x12\x0b\n\x03us2\x18\x02 \x01(\x05\x12\x0b\n\x03us3\x18\x03 \x01(\x05\x12\x0b\n\x03us4\x18\x04 \x01(\x05\x12\x0b\n\x03us5\x18\x05 \x01(\x05\x12\x0b\n\x03us6\x18\x06 \x01(\x05\x12\x0b\n\x03us7\x18\x07 \x01(\x05\x12\x0b\n\x03us8\x18\x08 \x01(\x05\x12\x0b\n\x03us9\x18\t \x01(\x05\x12\x0c\n\x04us10\x18\n \x01(\x05\"*\n\x12scan_channels_args\x12\x14\n\x0c\x63hannel_mask\x18\x01 \x01(\x05\"\x13\n\x11scan_channels_outb\x06proto3'
 )
 
 
@@ -341,6 +341,61 @@ _IS_MOTION_DONE_OUT = _descriptor.Descriptor(
 )
 
 
+_IS_BLOCKED_ARGS = _descriptor.Descriptor(
+  name='is_blocked_args',
+  full_name='game_actions.is_blocked_args',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=396,
+  serialized_end=413,
+)
+
+
+_IS_BLOCKED_OUT = _descriptor.Descriptor(
+  name='is_blocked_out',
+  full_name='game_actions.is_blocked_out',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='motion_done', full_name='game_actions.is_blocked_out.motion_done', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=415,
+  serialized_end=452,
+)
+
+
 _SET_PUMP_ARGS = _descriptor.Descriptor(
   name='set_pump_args',
   full_name='game_actions.set_pump_args',
@@ -374,8 +429,8 @@ _SET_PUMP_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=396,
-  serialized_end=443,
+  serialized_start=454,
+  serialized_end=501,
 )
 
 
@@ -398,8 +453,8 @@ _SET_PUMP_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=445,
-  serialized_end=459,
+  serialized_start=503,
+  serialized_end=517,
 )
 
 
@@ -443,8 +498,8 @@ _MOVE_STEPPER_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=461,
-  serialized_end=528,
+  serialized_start=519,
+  serialized_end=586,
 )
 
 
@@ -467,8 +522,8 @@ _MOVE_STEPPER_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=530,
-  serialized_end=548,
+  serialized_start=588,
+  serialized_end=606,
 )
 
 
@@ -505,8 +560,8 @@ _RESET_STEPPER_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=550,
-  serialized_end=602,
+  serialized_start=608,
+  serialized_end=660,
 )
 
 
@@ -529,8 +584,8 @@ _RESET_STEPPER_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=604,
-  serialized_end=623,
+  serialized_start=662,
+  serialized_end=681,
 )
 
 
@@ -567,8 +622,8 @@ _MOVE_SERVO_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=625,
-  serialized_end=674,
+  serialized_start=683,
+  serialized_end=732,
 )
 
 
@@ -591,8 +646,8 @@ _MOVE_SERVO_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=676,
-  serialized_end=692,
+  serialized_start=734,
+  serialized_end=750,
 )
 
 
@@ -622,8 +677,8 @@ _GET_BUTTON_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=694,
-  serialized_end=728,
+  serialized_start=752,
+  serialized_end=786,
 )
 
 
@@ -653,8 +708,8 @@ _GET_BUTTON_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=730,
-  serialized_end=762,
+  serialized_start=788,
+  serialized_end=820,
 )
 
 
@@ -684,8 +739,8 @@ _SLEEP_ARGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=764,
-  serialized_end=791,
+  serialized_start=822,
+  serialized_end=849,
 )
 
 
@@ -708,8 +763,236 @@ _SLEEP_OUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=793,
-  serialized_end=804,
+  serialized_start=851,
+  serialized_end=862,
+)
+
+
+_PRINT_ARGS = _descriptor.Descriptor(
+  name='print_args',
+  full_name='game_actions.print_args',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='message', full_name='game_actions.print_args.message', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=864,
+  serialized_end=893,
+)
+
+
+_PRINT_OUT = _descriptor.Descriptor(
+  name='print_out',
+  full_name='game_actions.print_out',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=895,
+  serialized_end=906,
+)
+
+
+_GET_US_READINGS_ARGS = _descriptor.Descriptor(
+  name='get_us_readings_args',
+  full_name='game_actions.get_us_readings_args',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=908,
+  serialized_end=930,
+)
+
+
+_GET_US_READINGS_OUT = _descriptor.Descriptor(
+  name='get_us_readings_out',
+  full_name='game_actions.get_us_readings_out',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='us1', full_name='game_actions.get_us_readings_out.us1', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us2', full_name='game_actions.get_us_readings_out.us2', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us3', full_name='game_actions.get_us_readings_out.us3', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us4', full_name='game_actions.get_us_readings_out.us4', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us5', full_name='game_actions.get_us_readings_out.us5', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us6', full_name='game_actions.get_us_readings_out.us6', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us7', full_name='game_actions.get_us_readings_out.us7', index=6,
+      number=7, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us8', full_name='game_actions.get_us_readings_out.us8', index=7,
+      number=8, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us9', full_name='game_actions.get_us_readings_out.us9', index=8,
+      number=9, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='us10', full_name='game_actions.get_us_readings_out.us10', index=9,
+      number=10, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=933,
+  serialized_end=1085,
+)
+
+
+_SCAN_CHANNELS_ARGS = _descriptor.Descriptor(
+  name='scan_channels_args',
+  full_name='game_actions.scan_channels_args',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='channel_mask', full_name='game_actions.scan_channels_args.channel_mask', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1087,
+  serialized_end=1129,
+)
+
+
+_SCAN_CHANNELS_OUT = _descriptor.Descriptor(
+  name='scan_channels_out',
+  full_name='game_actions.scan_channels_out',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1131,
+  serialized_end=1150,
 )
 
 DESCRIPTOR.message_types_by_name['set_pose_args'] = _SET_POSE_ARGS
@@ -722,6 +1005,8 @@ DESCRIPTOR.message_types_by_name['stop_motion_args'] = _STOP_MOTION_ARGS
 DESCRIPTOR.message_types_by_name['stop_motion_out'] = _STOP_MOTION_OUT
 DESCRIPTOR.message_types_by_name['is_motion_done_args'] = _IS_MOTION_DONE_ARGS
 DESCRIPTOR.message_types_by_name['is_motion_done_out'] = _IS_MOTION_DONE_OUT
+DESCRIPTOR.message_types_by_name['is_blocked_args'] = _IS_BLOCKED_ARGS
+DESCRIPTOR.message_types_by_name['is_blocked_out'] = _IS_BLOCKED_OUT
 DESCRIPTOR.message_types_by_name['set_pump_args'] = _SET_PUMP_ARGS
 DESCRIPTOR.message_types_by_name['set_pump_out'] = _SET_PUMP_OUT
 DESCRIPTOR.message_types_by_name['move_stepper_args'] = _MOVE_STEPPER_ARGS
@@ -734,6 +1019,12 @@ DESCRIPTOR.message_types_by_name['get_button_args'] = _GET_BUTTON_ARGS
 DESCRIPTOR.message_types_by_name['get_button_out'] = _GET_BUTTON_OUT
 DESCRIPTOR.message_types_by_name['sleep_args'] = _SLEEP_ARGS
 DESCRIPTOR.message_types_by_name['sleep_out'] = _SLEEP_OUT
+DESCRIPTOR.message_types_by_name['print_args'] = _PRINT_ARGS
+DESCRIPTOR.message_types_by_name['print_out'] = _PRINT_OUT
+DESCRIPTOR.message_types_by_name['get_us_readings_args'] = _GET_US_READINGS_ARGS
+DESCRIPTOR.message_types_by_name['get_us_readings_out'] = _GET_US_READINGS_OUT
+DESCRIPTOR.message_types_by_name['scan_channels_args'] = _SCAN_CHANNELS_ARGS
+DESCRIPTOR.message_types_by_name['scan_channels_out'] = _SCAN_CHANNELS_OUT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 set_pose_args = _reflection.GeneratedProtocolMessageType('set_pose_args', (_message.Message,), {
@@ -805,6 +1096,20 @@ is_motion_done_out = _reflection.GeneratedProtocolMessageType('is_motion_done_ou
   # @@protoc_insertion_point(class_scope:game_actions.is_motion_done_out)
   })
 _sym_db.RegisterMessage(is_motion_done_out)
+
+is_blocked_args = _reflection.GeneratedProtocolMessageType('is_blocked_args', (_message.Message,), {
+  'DESCRIPTOR' : _IS_BLOCKED_ARGS,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.is_blocked_args)
+  })
+_sym_db.RegisterMessage(is_blocked_args)
+
+is_blocked_out = _reflection.GeneratedProtocolMessageType('is_blocked_out', (_message.Message,), {
+  'DESCRIPTOR' : _IS_BLOCKED_OUT,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.is_blocked_out)
+  })
+_sym_db.RegisterMessage(is_blocked_out)
 
 set_pump_args = _reflection.GeneratedProtocolMessageType('set_pump_args', (_message.Message,), {
   'DESCRIPTOR' : _SET_PUMP_ARGS,
@@ -889,6 +1194,48 @@ sleep_out = _reflection.GeneratedProtocolMessageType('sleep_out', (_message.Mess
   # @@protoc_insertion_point(class_scope:game_actions.sleep_out)
   })
 _sym_db.RegisterMessage(sleep_out)
+
+print_args = _reflection.GeneratedProtocolMessageType('print_args', (_message.Message,), {
+  'DESCRIPTOR' : _PRINT_ARGS,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.print_args)
+  })
+_sym_db.RegisterMessage(print_args)
+
+print_out = _reflection.GeneratedProtocolMessageType('print_out', (_message.Message,), {
+  'DESCRIPTOR' : _PRINT_OUT,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.print_out)
+  })
+_sym_db.RegisterMessage(print_out)
+
+get_us_readings_args = _reflection.GeneratedProtocolMessageType('get_us_readings_args', (_message.Message,), {
+  'DESCRIPTOR' : _GET_US_READINGS_ARGS,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.get_us_readings_args)
+  })
+_sym_db.RegisterMessage(get_us_readings_args)
+
+get_us_readings_out = _reflection.GeneratedProtocolMessageType('get_us_readings_out', (_message.Message,), {
+  'DESCRIPTOR' : _GET_US_READINGS_OUT,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.get_us_readings_out)
+  })
+_sym_db.RegisterMessage(get_us_readings_out)
+
+scan_channels_args = _reflection.GeneratedProtocolMessageType('scan_channels_args', (_message.Message,), {
+  'DESCRIPTOR' : _SCAN_CHANNELS_ARGS,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.scan_channels_args)
+  })
+_sym_db.RegisterMessage(scan_channels_args)
+
+scan_channels_out = _reflection.GeneratedProtocolMessageType('scan_channels_out', (_message.Message,), {
+  'DESCRIPTOR' : _SCAN_CHANNELS_OUT,
+  '__module__' : 'proto.game_actions_pb2'
+  # @@protoc_insertion_point(class_scope:game_actions.scan_channels_out)
+  })
+_sym_db.RegisterMessage(scan_channels_out)
 
 
 # @@protoc_insertion_point(module_scope)

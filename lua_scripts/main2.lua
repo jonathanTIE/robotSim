@@ -1,11 +1,13 @@
+-- CAREFUL TO ORDER OF IMPORTATION : Makes sure it works for dependencies !
+
 local path_settings = require("path_settings")
+local config = require("config")
 local utils = require("utils")
 local machine = require("statemachine") -- Library
-local states = require("states") -- Logic
+local state = require("state") -- Logic
 
 
-MATCH_DURATION_MS = 87000
-DEFAULT_LOOP_PERIOD_MS = 50
+
 
 x_initial, y_initial, theta_initial = 0, 0, 0
 
@@ -13,37 +15,32 @@ main_loop = nil -- coroutine/thread
 is_right = nil -- boolean
 start_time = nil
 
-
-moved = false
+test_function_done = false
 function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
-    --path = utils.get_shortest_path(path_settings.edges, "INI", "S6")
-    --for i=1, #path do
-    --    print(path[i])
-    --end
     print("init done ! ")
+    -- DEBUG TEST : 
+
 end
 
 function on_loop(timestamp)
-    --here we do our shit
-    --print(timestamp - start_time)
-    --utils.escrcall(print, "escrall")
-    if (timestamp - start_time) > 10000 and not moved then -- TEST
-        moved = true
-        utils.escrall(set_pose, 200.0, 200.0, 0.0, false)
-        --set_pose(200.0, 200.0, 0.0, false)
-        print("displacement")
+    if start_time == nil then
+        start_time = timestamp
     end
+
+    state.loop(timestamp)
+    --here we do our shit
+
     --print("t " .. tostring(timestamp))
-    return DEFAULT_LOOP_PERIOD_MS
+    return config.DEFAULT_LOOP_PERIOD_MS
 end
 
 function create_coroutine()
     main_loop = coroutine.create( function (timestamp)
         start_time = timestamp
         while true do
-            if (timestamp - start_time) > MATCH_DURATION_MS then
+            if (timestamp - start_time) > config.MATCH_DURATION_MS then
 				on_end()
                 break
             end
@@ -61,8 +58,12 @@ function resume_loop(timestamp)
     end
     status, value = coroutine.resume(main_loop, timestamp)
     if coroutine.status (main_loop) == "dead" then
-		main_loop = nil
-		return -1
+        print("lua script crashed at : ")
+        print(tostring(value))
+        print(debug.traceback(main_loop))
+
+		main_loop = -2
+		return -2
     end
 	return value
 
