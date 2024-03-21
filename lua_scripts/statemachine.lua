@@ -95,7 +95,9 @@ function machine.create(options)
   for _, event in ipairs(options.events or {}) do
     local name = event.name
     fsm[name] = fsm[name] or create_transition(name)
-    fsm.events[name] = fsm.events[name] or { map = {} }
+    if fsm.events[name] == nil then
+      fsm.events[name] = { map = {} }
+    end
     add_to_map(fsm.events[name].map, event)
   end
   

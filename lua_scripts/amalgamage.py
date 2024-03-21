@@ -1,9 +1,12 @@
 import sys
 import os
 import re
+import time
 
 # AMALGAMAGE only with "root" modules (no submodules)
 # use "/" in the path as args
+# MAKES Sure that all lua files don't have a "\n" at the end
+#& C:/Users/Jonathan/anaconda3/envs/robot_sim/python.exe d:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/amalgamage.py D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main2.lua
 
 def err_abort(error_msg):
     print(error_msg)
@@ -22,8 +25,11 @@ def get_module_raw(original_file_path, filename) -> str:
             if x == '\n':
                 list_content = (file_content[:-i] + '\n').splitlines()
                 break
+        if len(list_content) < 3:
+            print(f" !! Warning !! may be missing return MODULENAME in {file_path}")
         list_content = [x for x in list_content if not re.search(r'require\(\"', x)] #remove line of require
-            
+        
+        
         return '\n'.join(list_content) + '\n'
 
 
@@ -53,7 +59,6 @@ if __name__ == '__main__':
     #getting modules
     for file_name in file_names_to_amalgame:
         modules.append(get_module_raw(file_to_amalgame, file_name))
-
     # make the amalgamation
         file_path = file_to_amalgame[:-4] + "_amalg.lua"
     with open(file_path, 'w') as f:

@@ -1,26 +1,11 @@
-
-config = {}
-
-config.MATCH_DURATION_MS = 87000
-config.DEFAULT_LOOP_PERIOD_MS = 50
-
-
-config.ENNEMY_RADIUS_MM = 200
-config.SCAN_DURATION_MS = 330 -- 30ms margin
-
-config.US_DECAY_TIME_MS = 500 -- US reading is invalid after 500ms
-
-config.OVERSHOOT_MM = 50 -- distance to overshoot when sticking to wall
-config.ROBOT_CENTER_Y_BOTTOM = 200 -- distance wall/center robot when following bottom wall
-
-config.PANEL_ARM_TIMEOUT_MS = 250
-
 path_settings = {}
 
 path_settings.table_coordinates = {
     INI = {x=200, y= 200}, -- starting position
     S6 = {x=2000, y=200}, -- 6th solar panel
-    S1 = {x=300, y=200}, -- 1st solar panel
+    S1 = {x=250, y=150}, -- 1st solar panel
+    S1EO = {x=350, y=0}, -- End 1st solar panel with Overshoot
+    S1ER = {x = 350, y=120}, -- End 1st solar panel with Recalage
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
 
@@ -34,6 +19,25 @@ path_settings.edges = {
     A8 = {"INI", "P6B"},
     P6B = {"S6", "A8"},
 }
+
+
+config = {}
+
+config.MATCH_DURATION_MS = 87000
+config.DEFAULT_LOOP_PERIOD_MS = 50
+
+
+config.ENNEMY_RADIUS_MM = 200
+config.SCAN_DURATION_MS = 330 -- 30ms margin
+
+config.US_DECAY_TIME_MS = 500 -- US reading is invalid after 500ms
+
+config.OVERSHOOT_MM = 100 -- distance to overshoot when sticking to wall
+config.ROBOT_CENTER_Y_BOTTOM = 200 -- distance wall/center robot when following bottom wall
+
+config.PANEL_ARM_TIMEOUT_MS = 250
+
+config.theta_pince_mur = -0.52359877559
 
 
 local utils = {}
@@ -295,7 +299,9 @@ function machine.create(options)
   for _, event in ipairs(options.events or {}) do
     local name = event.name
     fsm[name] = fsm[name] or create_transition(name)
-    fsm.events[name] = fsm.events[name] or { map = {} }
+    if fsm.events[name] == nil then
+      fsm.events[name] = { map = {} }
+    end
     add_to_map(fsm.events[name].map, event)
   end
   
@@ -354,6 +360,7 @@ end
 
 machine.NONE = NONE
 machine.ASYNC = ASYNC
+
 
 
 
@@ -418,29 +425,12 @@ function state.scan_and_wait_us(fsm, name, from, to, action_fsm, timestamp)
     return fsm.ASYNC
 end
 
--- function to be called to find a solution after 1. robot is blocked 2. one scan has been done 
-function state.recover_from_blocked(fsm, name, from, to, timestamp)
-    local opfor_x, opfor_y = utils.get_opfor_position(timestamp)
-    local dest_waypt = utils.reach_closest_waypoint(start_x, start_y, opfor_x, opfor_y)
-    if state.recovery_method == state.Recovery.CNL then
-        error("unimplemented cancel")
-    elseif state.recovery_method == state.Recovery.PUSHBCK then
-        error("unimplemented pushback")
-    elseif state.recovery_method == state.Recovery.WAIT then
-        error("unimplemented wait")
-    elseif state.recovery_method == state.Recovery.AROUND then
-        utils.pathfind(dest_waypt, state.destination)
-    else
-        error("state.recover_from_blocked: invalid recovery method")
-    end
-    
-end
 
 
 
----- 2 MACHINES --
----- one for displacement, & the rest
---
+-- 2 MACHINES --
+-- one for displacement, & the rest
+
 state.movement_state = machine.create( {
     initial = "done",
     events = {
@@ -450,20 +440,28 @@ state.movement_state = machine.create( {
         { name = "set_stopped", from = "moving_safe", to = "stopped"},
 
     },
-    callbacks = {
-        onmove_safe = function(fsm, name, from, to, waypoint, theta)
-            if path_settings.table_coordinates[waypoint] == nil then
-                error("state.movement_state.onmove_safe: invalid waypoint : " .. tostring(waypoint))
-            end
-            local x = path_settings.table_coordinates[waypoint].x
-            local y = path_settings.table_coordinates[waypoint].y
-            set_pose(x, y, theta, true)
-        end,
+    callbacks = { 
+ -- TODO : Move it with the other synthax to prevent bugs 
 --        onset_stopped = function(fsm, name, from, to, timestamp)  
 --            state.scan_and_wait_us(fsm, name, from, to, state.action_state, timestamp)
 --        end,
     },
 })
+
+state.get_wpt_coords = function(waypoint)
+    if path_settings.table_coordinates[waypoint] == nil then
+        error("state.get_wpt_coords: invalid waypoint : " .. tostring(waypoint))
+    end
+    return path_settings.table_coordinates[waypoint].x, path_settings.table_coordinates[waypoint].y
+end
+
+state.movement_state.onmove_safe = function(fsm, name, from, to, x, y, theta)
+    set_pose(x, y, theta, true)
+end
+
+state.movement_state.onmove_blind = function(fsm, name, from, to, x, y, theta)
+    set_pose(x, y, theta, false)
+end
 
 state.action_state = machine.create ( {
     initial = "idle",
@@ -475,28 +473,56 @@ state.action_state = machine.create ( {
         {name = "follow_wall_S1", from = '*', to = "following_wall_S1"}---- Deploy arm
 
     },
---    callbacks = {
---        -- EVENTS
---
+    --callbacks = {
+        -- EVENTS
+
 --        onend_scan = function(fsm, name, from, to, timestamp)
 --            utils.get_opfor_position(timestamp) end,
---
---        -- STATES
---        -- onidle = ... Moved to state.loop to make it called on first loop
---    },
+
+        -- STATES
+        -- onidle = ... Moved to state.loop to make it called on first loop
+    --},
 })
 
 state.actions = {}
 
+-- function to be called to find a solution after 1. robot is blocked 2. one scan has been done 
+--state.action_state.onend_scan = function (fsm, name, from, to, timestamp)
+--    local opfor_x, opfor_y = utils.get_opfor_position(timestamp)
+--    local start_x, start_y = get_pose()
+--    -- IF NOT ON THE WAY TO DESTINATION -> Continue, and state.recovery_method = WAIT
+--    if state.recovery_method == state.Recovery.WAIT then
+--        error("unimplemented wait")
+--        state.recovery_method = state.Recovery.PUSHBCK
+--    end
+--    local free_wpt = utils.reach_closest_waypoint(start_x, start_y, opfor_x, opfor_y)
+--    if state.recovery_method == state.Recovery.CNL then
+--        error("unimplemented cancel")
+--    elseif state.recovery_method == state.Recovery.PUSHBCK then
+--
+--        error("unimplemented pushback")
+--    elseif state.recovery_method == state.Recovery.WAIT then
+--        error("unimplemented wait")
+--    elseif state.recovery_method == state.Recovery.AROUND then
+--        utils.pathfind(dest_waypt, state.destination)
+--    else
+--        error("state.recover_from_blocked: invalid recovery method")
+--    end
+--    
+--end
+
+
 state.action_state.onmove_S1 = function(fsm, name, from, to, timestamp)
     print("beg act_solar_S1_to_S1_init")
-    state.movement_state:move_safe("S1", -0.52359877559) -- 60° in radians
+    move_servo(1, 3000)
+    local x, y = state.get_wpt_coords("S1")
+    state.movement_state:move_safe(x, y, config.theta_pince_mur) -- 60° in radians
 
     -- Stick to wall with UNsafe move : 
     state.movement_state.ondone = function (self, event, from, to)
         local x,y = get_pose()
         local x_dest, y_dest = x, config.ROBOT_CENTER_Y_BOTTOM - config.OVERSHOOT_MM
-        state.movement_state:move_blind(x_dest, y_dest, -0.52359877559)
+        state.movement_state:move_blind(x_dest, y_dest, config.theta_pince_mur - 0.1 * 1) -- Increment at each travel along wall -> Todo : convert to a variable
         state.movement_state.ondone = function (self, event, from, to)
             state.action_state:follow_wall_S1()
             state.movement_state.ondone = nil
@@ -506,34 +532,33 @@ state.action_state.onmove_S1 = function(fsm, name, from, to, timestamp)
 end
 
 state.action_state.onfollow_wall_S1 = function(fsm, name, from, to)
-    move_servo(1, 4000)
-    state.movement_state:move_safe("INI", -0.52359877559) -- 60° in radians
+    local x_dest, y_dest = state.get_wpt_coords("S1EO")
+    state.movement_state:move_safe(x_dest, y_dest, config.theta_pince_mur - 0.1 * 2)
+    state.movement_state.ondone = function (self, event, from, to)
+        -- TODO : Advance further
+        --curently : 
+        state.action_state:do_nothing()
+    end
+    --state.movement_state:move_safe("INI", -0.52359877559) -- 60° in radians
 
 end
 
--- Test function that doesn't use the contactor
-state.actions.following_wall_S1 = {
-    start_stamp = nil,
-    panel_count = 0,
-    left_contactor = 0,     -- 0 = Unpressed, 1 = pressed, 2 = is unpressed since config.proximity_panel_timeout (100ms ?)
-    loop = nil,
-}
+state.actions.following_wall_S1 = {}
 
+state.actions.following_wall_S1.start_stamp = nil
+state.actions.following_wall_S1.panel_count = 0
+state.actions.following_wall_S1.left_contactor = 0   -- 0 = Unpressed, 1 = pressed, 2 = is unpressed since config.proximity_panel_timeout (100ms ?)
 state.actions.following_wall_S1.loop = function(timestamp)
-    local start_stamp = state.actions.following_wall_S1.start_stamp
-    if start_stamp == nil then
-        start_stamp = timestamp
-    end
-    if timestamp - start_stamp > config.PANEL_ARM_TIMEOUT_MS then
-        move_servo(1, 2000)
-        state.movement_state.ondone = function (self, event, from, to)
-            print("follow_wall_S1_over")
-            state.action_state:do_nothing()
-            state.movement_state.ondone = nil
-        end
-        
-    end
-    print("CXZ")
+--    if state.actions.following_wall_S1.start_stamp == nil then
+--        state.actions.following_wall_S1.start_stamp = timestamp
+--    end
+--
+    ----if get_button(101) == true then
+    ----    move_servo(1, 6000)
+    ---- state.actions.following_wall_S1.left
+    ----    state.action_state:...
+    ----end
+    --print("CXZ")
     -- TODO : ontrigger_left_contactor : moving servo !!
 end
 
@@ -589,7 +614,23 @@ function state.loop(timestamp)
         end
     end
 
-    print(state.movement_state.current)
+    -- shitty workaround due to impossibility to do indexing through state.actions['xxxxxx']
+    for k, v in pairs(state.actions) do
+        if state.action_state.current == k then
+            if v.loop ~= nil then
+                v.loop()
+            else
+                print("strange_behaviour for action_state")
+            end
+        end
+
+    end
+    
+    --if state.action_state.current == "following_wall_S1" then
+    --    print("following_wall_S1")
+    --    state.actions.following_wall_S1.loop(timestamp)
+    --end
+    
     -- SENSOR LOOP
     --[[ 
     if state.sensor_state.current == "unpressed_left_conn" then
@@ -606,13 +647,16 @@ function state.loop(timestamp)
 end
 
 
+
+
+
 -- CAREFUL TO ORDER OF IMPORTATION : Makes sure it works for dependencies !
 
 
 
 
 
-x_initial, y_initial, theta_initial = 0, 0, 0
+x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
 
 main_loop = nil -- coroutine/thread
 is_right = nil -- boolean
@@ -622,6 +666,7 @@ test_function_done = false
 function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
+    move_servo(1, 6000) --pince droite
     print("init done ! ")
     -- DEBUG TEST : 
 
