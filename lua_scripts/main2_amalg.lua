@@ -4,8 +4,8 @@ path_settings.table_coordinates = {
     INI = {x=200, y= 200}, -- starting position
     S6 = {x=2000, y=200}, -- 6th solar panel
     S1 = {x=250, y=150}, -- 1st solar panel
-    S1EO = {x=350, y=0}, -- End 1st solar panel with Overshoot
-    S1ER = {x = 350, y=120}, -- End 1st solar panel with Recalage
+    S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
+    S1ER = {x = 450, y=120}, -- End 1st solar panel with Recalage
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
 
@@ -371,11 +371,12 @@ state.Recovery = {
     CNL = {},
     PUSHBCK = {},
     AROUND = {},
-    WAIT = {}, --Do nothing until ennemy move
+    WAIT_2S = {}, --Do nothing until ennemy move
 }
 
 state.recovery_method = state.Recovery.CNL -- Default state
-state.destination = nil -- Default state
+state.destination = {} -- Default state
+state.end_scan_stamp = nil
 
 -- TIMER FUNCTION --
 state.timer = {} -- SINGLETON => Only one timer at a time
@@ -434,17 +435,17 @@ end
 state.movement_state = machine.create( {
     initial = "done",
     events = {
-        { name = "move_safe", from = {"done", "stopped"} , to = "moving_safe"},
-        { name = "move_blind", from = {"done", "stopped"}, to = "moving_blind"},
+        { name = "move_safe", from = {"done", "recovering"} , to = "moving_safe"},
+        { name = "move_blind", from = {"done", "recovering"}, to = "moving_blind"},
         { name = "set_done", from = {"moving_blind", "moving_safe"}, to = "done"},
-        { name = "set_stopped", from = "moving_safe", to = "stopped"},
+        { name = "stop", from = "moving_safe", to = "stopped"},
+        { name = "scan_over", from = "stopped", to = "recovering"},
 
     },
+
     callbacks = { 
- -- TODO : Move it with the other synthax to prevent bugs 
---        onset_stopped = function(fsm, name, from, to, timestamp)  
---            state.scan_and_wait_us(fsm, name, from, to, state.action_state, timestamp)
---        end,
+        onstop = function(self, event, from, to, timestamp) end,
+        onscan_over = function (fsm, name, from, to, timestamp) end,
     },
 })
 
@@ -456,12 +457,34 @@ state.get_wpt_coords = function(waypoint)
 end
 
 state.movement_state.onmove_safe = function(fsm, name, from, to, x, y, theta)
+    state.destination.x = x
+    state.destination.y = y
+    state.destination.theta = theta
     set_pose(x, y, theta, true)
 end
 
 state.movement_state.onmove_blind = function(fsm, name, from, to, x, y, theta)
+    state.destination.x = x
+    state.destination.y = y
+    state.destination.theta = theta
     set_pose(x, y, theta, false)
 end
+
+state.movement_state.onset_stopped = function(fsm, name, from, to, timestamp)  
+    scan_channels(tonumber("1111111111", 2)) -- full scan (mask of 10 bits)
+    state.end_scan_stamp = timestamp + config.SCAN_DURATION_MS
+end
+
+state.movement_state.onscan_over = function (fsm, name, from, to, timestamp)
+        -- IMPLEMENT MEGA LOGIC
+    
+    -- TODO : Implement a function to check if the scan is over
+    --if timestamp > state.end_scan_stamp then
+    --    fsm:transition(name)
+    --end
+    state.movement_state:move_safe(state.destination.x, state.destination.y, state.destination.theta)
+end
+
 
 state.action_state = machine.create ( {
     initial = "idle",
@@ -553,11 +576,9 @@ state.actions.following_wall_S1.loop = function(timestamp)
 --        state.actions.following_wall_S1.start_stamp = timestamp
 --    end
 --
-    ----if get_button(101) == true then
-    ----    move_servo(1, 6000)
-    ---- state.actions.following_wall_S1.left
-    ----    state.action_state:...
-    ----end
+    if get_button(101) == true then
+        move_servo(1, 6000)
+    end
     --print("CXZ")
     -- TODO : ontrigger_left_contactor : moving servo !!
 end
@@ -606,6 +627,11 @@ function state.loop(timestamp)
     --    state.movement_state:stop()
     --}
 
+    if state.movement_state.current == "stopped" and timestamp > state.end_scan_stamp then
+        state.movement_state:scan_over(timestamp)
+    end
+
+
     -- ACTION LOOP
     if state.action_state.current == "idle" then
         if state.action_order[1] ~= nil or true then
@@ -625,25 +651,6 @@ function state.loop(timestamp)
         end
 
     end
-    
-    --if state.action_state.current == "following_wall_S1" then
-    --    print("following_wall_S1")
-    --    state.actions.following_wall_S1.loop(timestamp)
-    --end
-    
-    -- SENSOR LOOP
-    --[[ 
-    if state.sensor_state.current == "unpressed_left_conn" then
-        if is_left_connector_pressed() then
-            state.sensor_state:trigger_left_connector()
-        end
-    end
-    if state.sensor_state.current == "triggered_left_con" then
-        if not is_left_connector_pressed() then
-            state.sensor_state:disable_left_connector()
-        end
-    end
-    --]]
 end
 
 

@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
     //TODO : temp
     std::filesystem::current_path("D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts"); //prevent module import problem
-    lua_loader(L, "D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main2.lua", is_reversed);
+    lua_loader(L, "D:/Sync/Code/Robotique/CDR2024/robotSim/lua_scripts/main2_amalg.lua", is_reversed);
 
     while (eCAL::Ok())
     {
