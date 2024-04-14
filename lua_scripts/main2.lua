@@ -20,6 +20,8 @@ function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
     move_servo(1, 6000) --pince droite
+    move_stepper(0, 200, 0.15) -- Stepper "initialization"
+    move_servo(5, 2000) -- Porte_pince (position haute)
     print("init done ! ")
     -- DEBUG TEST : 
 
@@ -71,5 +73,5 @@ function resume_loop(timestamp)
 end
 
 function on_end()
-    print("Score: 0")
+    print("Score: " .. state.score)
 end

@@ -6,8 +6,11 @@ path_settings.table_coordinates = {
     S1 = {x=250, y=150}, -- 1st solar panel
     S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
     S1ER = {x = 450, y=120}, -- End 1st solar panel with Recalage
+
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
+
+    P11B = {x=1000, y=450},
 
 
 }

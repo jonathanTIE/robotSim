@@ -6,8 +6,11 @@ path_settings.table_coordinates = {
     S1 = {x=250, y=150}, -- 1st solar panel
     S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
     S1ER = {x = 450, y=120}, -- End 1st solar panel with Recalage
+
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
+
+    P11B = {x=1000, y=450},
 
 
 }
@@ -32,12 +35,17 @@ config.SCAN_DURATION_MS = 330 -- 30ms margin
 
 config.US_DECAY_TIME_MS = 500 -- US reading is invalid after 500ms
 
+config.STEP_DISTANCE = 60 -- mm, increment between each "jump" at wall following
 config.OVERSHOOT_MM = 100 -- distance to overshoot when sticking to wall
+config.OVERSHOOT_THETA = 0.1 -- rad
 config.ROBOT_CENTER_Y_BOTTOM = 200 -- distance wall/center robot when following bottom wall
+config.DIST_BEF_ARM = 100 --mm , distance before placing arm on panel
 
 config.PANEL_ARM_TIMEOUT_MS = 250
 
 config.theta_pince_mur = -0.52359877559
+config.pi = 3.14159265359
+
 
 
 local utils = {}
@@ -84,52 +92,6 @@ function utils.escrall(func, ...) --protected call, tailored for E.S.C.Ro.C.S
     end
 end
 
--- PATH FUNCTIONS --
--- TODO : Make a check for path_settings input
-
---TODO : find a use for this or delete :
-function utils.get_edges(edges_table)
-    for vertice,v in pairs(edges_table) do
-            print(vertice)
-        for _,w in pairs(v) do
-            print(w)
-        end
-    end
-    return
-end
-
-function utils.backtrace(parents, start_vertice, end_vertice)
-    local path = {}
-    local vertice = end_vertice
-    while vertice ~= start_vertice do
-        table.insert(path, 1, vertice)
-        vertice = parents[vertice]
-    end
-    table.insert(path, 1, start_vertice)
-    return path
-end
-
-function utils.get_shortest_path(edges_table, start_vertice, end_vertice)
-    -- BFS algorithm, based on wikipedia
-    local parents = {}
-    local explored = {}
-    local queue = Queue.new()
-    explored[start_vertice] = true
-    Queue.push(queue, start_vertice)
-    while not Queue.is_empty(queue) do
-        local vertice = Queue.pop(queue)
-        if vertice == end_vertice then
-            return utils.backtrace(parents, start_vertice, end_vertice)
-        end
-        for _,w in pairs(edges_table[vertice]) do
-            if not explored[w] then
-                explored[w] = true
-                parents[w] = vertice
-                Queue.push(queue, w)
-            end
-        end
-    end
-end
 
 -- POSITIONS FUNCTIONS --
 function utils.get_distance(x1, y1, x2, y2)
@@ -200,6 +162,7 @@ function utils.get_opfor_position(timestamp)
 
 end
 
+--utils.pushback_target -> get ennemy angle, calculate a point opposite to him, if it's not on table, compensate
 
 
 -- https://github.com/kyleconroy/lua-state-machine/blob/master/statemachine.lua
@@ -370,10 +333,10 @@ state.__index = state
 state.Recovery = {
     CNL = {},
     PUSHBCK = {},
-    AROUND = {},
     WAIT_2S = {}, --Do nothing until ennemy move
 }
 
+state.score = 0
 state.recovery_method = state.Recovery.CNL -- Default state
 state.destination = {} -- Default state
 state.end_scan_stamp = nil
@@ -403,32 +366,6 @@ state.timer.is_done = function (timestamp)
 end
 
 
---local function reach_around_S6(fsm, name, from, to)
---    --UNFINISHED
---    start_x, start_y = get_pose()
---    end_x, end_y = table_coordinates["S6"].x, table_coordinates["S6"].y
---    reach_around(start_x, start_y, end_x, end_y)
---
---end
-
-
-
-function state.scan_and_wait_us(fsm, name, from, to, action_fsm, timestamp)
-    action_fsm:scan_and_wait_inf()
-    scan_channels(tonumber("1111111111", 2)) -- full scan (mask of 10 bits)
-    if state.timer.start ~= nil then
-        error("state.can_and_wait_us: timer already set - resseting it")
-    end
-
-    state.timer.set(timestamp, config.SCAN_DURATION_MS, 
-        function() fsm:transition(name) action_fsm:end_scan() end)
-
-    return fsm.ASYNC
-end
-
-
-
-
 -- 2 MACHINES --
 -- one for displacement, & the rest
 
@@ -439,14 +376,11 @@ state.movement_state = machine.create( {
         { name = "move_blind", from = {"done", "recovering"}, to = "moving_blind"},
         { name = "set_done", from = {"moving_blind", "moving_safe"}, to = "done"},
         { name = "stop", from = "moving_safe", to = "stopped"},
-        { name = "scan_over", from = "stopped", to = "recovering"},
+        { name = "wait_bck_cnl", from = "stopped", to = "full_recovering"},
+        { name = "cnl", from = "stopped", to = "canceled"},
 
     },
 
-    callbacks = { 
-        onstop = function(self, event, from, to, timestamp) end,
-        onscan_over = function (fsm, name, from, to, timestamp) end,
-    },
 })
 
 state.get_wpt_coords = function(waypoint)
@@ -493,7 +427,11 @@ state.action_state = machine.create ( {
         {name = "end_scan", from = "scanning", to = "idle"},
         {name = "do_nothing", from = '*', to = "idle"}, -- Used to make sure that the machine is idle when beggining a new action
         {name = "move_S1", from = '*', to = "sticking_wall_S1"},
-        {name = "follow_wall_S1", from = '*', to = "following_wall_S1"}---- Deploy arm
+        {name = "follow_wall_S1", from = '*', to = "following_wall_S1"}, ---- Deploy arm
+        {name = "move_PB11", from = '*', to = "moving_PB11"},
+        {name = "push_PB11", from = '*', to = "pushing_PB11"},
+        {name = "fetch_plant", from = '*', to = "fetching_plant"},
+        
 
     },
     --callbacks = {
@@ -509,37 +447,14 @@ state.action_state = machine.create ( {
 
 state.actions = {}
 
--- function to be called to find a solution after 1. robot is blocked 2. one scan has been done 
---state.action_state.onend_scan = function (fsm, name, from, to, timestamp)
---    local opfor_x, opfor_y = utils.get_opfor_position(timestamp)
---    local start_x, start_y = get_pose()
---    -- IF NOT ON THE WAY TO DESTINATION -> Continue, and state.recovery_method = WAIT
---    if state.recovery_method == state.Recovery.WAIT then
---        error("unimplemented wait")
---        state.recovery_method = state.Recovery.PUSHBCK
---    end
---    local free_wpt = utils.reach_closest_waypoint(start_x, start_y, opfor_x, opfor_y)
---    if state.recovery_method == state.Recovery.CNL then
---        error("unimplemented cancel")
---    elseif state.recovery_method == state.Recovery.PUSHBCK then
---
---        error("unimplemented pushback")
---    elseif state.recovery_method == state.Recovery.WAIT then
---        error("unimplemented wait")
---    elseif state.recovery_method == state.Recovery.AROUND then
---        utils.pathfind(dest_waypt, state.destination)
---    else
---        error("state.recover_from_blocked: invalid recovery method")
---    end
---    
---end
-
-
 state.action_state.onmove_S1 = function(fsm, name, from, to, timestamp)
     print("beg act_solar_S1_to_S1_init")
     move_servo(1, 3000)
     local x, y = state.get_wpt_coords("S1")
     state.movement_state:move_safe(x, y, config.theta_pince_mur) -- 60° in radians
+    state.movement_state.on_stopped = function (self, event, from, to)
+        state.movement_state:wait_bck_cnl()
+    end
 
     -- Stick to wall with UNsafe move : 
     state.movement_state.ondone = function (self, event, from, to)
@@ -555,12 +470,8 @@ state.action_state.onmove_S1 = function(fsm, name, from, to, timestamp)
 end
 
 state.action_state.onfollow_wall_S1 = function(fsm, name, from, to)
-    local x_dest, y_dest = state.get_wpt_coords("S1EO")
-    state.movement_state:move_safe(x_dest, y_dest, config.theta_pince_mur - 0.1 * 2)
-    state.movement_state.ondone = function (self, event, from, to)
-        -- TODO : Advance further
-        --curently : 
-        state.action_state:do_nothing()
+    state.movement_state.onstopped = function (self, event, from, to)
+        state.movement_state:cnl()
     end
     --state.movement_state:move_safe("INI", -0.52359877559) -- 60° in radians
 
@@ -569,25 +480,97 @@ end
 state.actions.following_wall_S1 = {}
 
 state.actions.following_wall_S1.start_stamp = nil
+state.actions.following_wall_S1.pos_x = nil
 state.actions.following_wall_S1.panel_count = 0
-state.actions.following_wall_S1.left_contactor = 0   -- 0 = Unpressed, 1 = pressed, 2 = is unpressed since config.proximity_panel_timeout (100ms ?)
+state.actions.following_wall_S1.contactor = 0   -- 0 = Unpressed, 1 = pressed, 2 = is unpressed since config.proximity_panel_timeout (100ms ?)
 state.actions.following_wall_S1.loop = function(timestamp)
---    if state.actions.following_wall_S1.start_stamp == nil then
---        state.actions.following_wall_S1.start_stamp = timestamp
---    end
---
-    if get_button(101) == true then
-        move_servo(1, 6000)
+    if state.movement_state.current == "done" then
+        local x,y, theta = get_pose()
+        local x_dest, y_dest, theta_dest = x + config.STEP_DISTANCE, y + config.OVERSHOOT_MM, theta - config.OVERSHOOT_THETA
+        state.movement_state:move_safe(x_dest, y_dest, theta_dest)
     end
-    --print("CXZ")
-    -- TODO : ontrigger_left_contactor : moving servo !!
+    if get_button(101) == true and state.actions.following_wall_S1.contactor == 0 then
+        move_servo(1, 6000)
+        state.actions.following_wall_S1.panel_count = state.actions.following_wall_S1.panel_count + 1
+        state.actions.following_wall_S1.contactor = 1
+        state.actions.following_wall_S1.pos_x = get_pose()
+    end
+
+    if state.actions.following_wall_S1.contactor == 1 and get_button(101) == false and
+    get_pose() > state.actions.following_wall_S1.pos_x + config.DIST_BEF_ARM then
+        state.actions.following_wall_S1.contactor = 0
+        move_servo(1, 3000)
+    end
+
+    if state.actions.following_wall_S1.panel_count > 3 then
+        state.movement_state.onstopped = nil
+        state.movement_state:stop()
+        state.action_state:do_nothing()
+    
+    end
+
 end
 
+state.action_state.onmove_PB11 = function(fsm, name, from, to)
+    local x, y = state.get_wpt_coords("P11B")
+    state.movement_state:move_safe(x, y, config.pi / 2)
+    state.movement_state.onstopped = function (self, event, from, to)
+        -- retry
+    end
+    state.movement_state.ondone = function (self, event, from, to)
+        state.action_state:push_PB11()
+    end
+end
 
+state.action_state.onpush_PB11 = function(fsm, name, from, to)
+    state.movement_state.onstopped = function (self, event, from, to)
+        -- TODO CNL !
+    end
+end
+
+state.actions.pushing_PB11 = {}
+state.actions.pushing_PB11.max_jump = 5
+state.actions.pushing_PB11.jump_count = 0
+state.actions.pushing_PB11.loop = function(timestamp)
+    if state.actions.pushing_PB11.jump_count >= state.actions.pushing_PB11.max_jump then
+        state.movement_state.onstopped = nil
+        state.movement_state:stop()
+        state.action_state:do_nothing()
+    end
+    if state.movement_state.current == "done" then
+        local x,y, theta = get_pose()
+        local x_dest, y_dest, theta_dest = x + config.STEP_DISTANCE, y, theta
+        state.movement_state:move_safe(x_dest, y_dest, theta_dest)
+        state.actions.pushing_PB11.jump_count = state.actions.pushing_PB11.jump_count + 1
+    end
+end
+
+state.actions.fetching_plant = {}
+state.actions.fetching_plant.start_stamp = nil
+state.actions.fetching_plant.loop = function(timestamp)
+    if state.actions.fetching_plant.start_stamp == nil then
+        state.actions.fetching_plant.start_stamp = timestamp
+        move_stepper(0, 200, 0.15) -- Go_to_bottom
+    end
+    --if timestamp - state.actions.fetching_plant.start_stamp > ?????????? then
+    --    !!!!!!!!!!! move_servo --close
+    --end
+--
+    --if timestamp - state.actions.fetching_plant.start_stamp > ?????????? then
+    --    !!!!!!!!!!! 
+    --    state.action_state:do_nothing()
+    --end
+    -- TODO
+end
+state.action_state.onfetch_plant = function(fsm, name, from, to)
+    
+    -- TODO
+end
 -- action order
 
 state.action_order = {}
-state.action_order[1] = state.action_state.move_S1
+--state.action_order[1] = state.action_state.move_S1
+state.action_order[1] = state.action_state.push_PB11
     --state.init_act_reset_pos_corner_btm,
     --state.init_act_plant_PB6_to_closest_area,
 
@@ -674,6 +657,8 @@ function on_init(side)
     is_right = side
     overwrite_pose(x_initial, y_initial, theta_initial)
     move_servo(1, 6000) --pince droite
+    move_stepper(0, 200, 0.15) -- Stepper "initialization"
+    move_servo(5, 10000) -- Porte_pince
     print("init done ! ")
     -- DEBUG TEST : 
 
@@ -725,5 +710,5 @@ function resume_loop(timestamp)
 end
 
 function on_end()
-    print("Score: 0")
+    print("Score: " .. state.score)
 end
