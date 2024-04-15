@@ -1,7 +1,7 @@
 path_settings = {}
 
 path_settings.table_coordinates = {
-    INI = {x=200, y= 200}, -- starting position
+    INI = {x=280, y= 160}, -- starting position
     S6 = {x=2000, y=200}, -- 6th solar panel
     S1 = {x=250, y=150}, -- 1st solar panel
     S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
@@ -10,7 +10,8 @@ path_settings.table_coordinates = {
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
 
-    P11B = {x=1000, y=450},
+    P11B = {x=1000, y=530},
+    AML = {x=700, y=1000}, -- Aruco Middle Left (between the two arucos)
 
 
 }
@@ -339,6 +340,7 @@ state.Recovery = {
 state.score = 0
 state.recovery_method = state.Recovery.CNL -- Default state
 state.destination = {} -- Default state
+state.stop_stamp = 0
 state.end_scan_stamp = nil
 
 -- TIMER FUNCTION --
@@ -407,6 +409,7 @@ end
 state.movement_state.onset_stopped = function(fsm, name, from, to, timestamp)  
     scan_channels(tonumber("1111111111", 2)) -- full scan (mask of 10 bits)
     state.end_scan_stamp = timestamp + config.SCAN_DURATION_MS
+    state.stop_stamp = timestamp
 end
 
 state.movement_state.onscan_over = function (fsm, name, from, to, timestamp)
@@ -417,6 +420,13 @@ state.movement_state.onscan_over = function (fsm, name, from, to, timestamp)
     --    fsm:transition(name)
     --end
     state.movement_state:move_safe(state.destination.x, state.destination.y, state.destination.theta)
+end
+
+state.movement_state.onwait_bck_cnl = function(fsm, name, from, to)
+    --TODO : do something else than just waiting
+    state.timer.set(state.stop_stamp, state.end_scan_stamp, function()
+        state.movement_state:move_safe(state.destination.x, state.destination.y, state.destination.theta)
+    end)
 end
 
 
@@ -431,6 +441,10 @@ state.action_state = machine.create ( {
         {name = "move_PB11", from = '*', to = "moving_PB11"},
         {name = "push_PB11", from = '*', to = "pushing_PB11"},
         {name = "fetch_plant", from = '*', to = "fetching_plant"},
+        {name= "move_JTOP", from = '*', to = "moving_JTOP"},
+        {name= "depose_plant", from = "*", to = "deposing_plant"},
+        {name = "home_TOP", from = "*", to = "homing_TOP"},
+        
         
 
     },
@@ -513,7 +527,7 @@ end
 
 state.action_state.onmove_PB11 = function(fsm, name, from, to)
     local x, y = state.get_wpt_coords("P11B")
-    state.movement_state:move_safe(x, y, config.pi / 2)
+    state.movement_state:move_safe(x, y, - config.pi / 2 + 0.17) -- Correction to allow robot to be on good angle
     state.movement_state.onstopped = function (self, event, from, to)
         -- retry
     end
@@ -524,7 +538,7 @@ end
 
 state.action_state.onpush_PB11 = function(fsm, name, from, to)
     state.movement_state.onstopped = function (self, event, from, to)
-        -- TODO CNL !
+        state.movement_state:wait_bck_cnl()
     end
 end
 
@@ -532,16 +546,20 @@ state.actions.pushing_PB11 = {}
 state.actions.pushing_PB11.max_jump = 5
 state.actions.pushing_PB11.jump_count = 0
 state.actions.pushing_PB11.loop = function(timestamp)
-    if state.actions.pushing_PB11.jump_count >= state.actions.pushing_PB11.max_jump then
+    if state.actions.pushing_PB11.jump_count >= state.actions.pushing_PB11.max_jump 
+    and state.movement_state.current == "done"
+    then
         state.movement_state.onstopped = nil
         state.movement_state:stop()
-        state.action_state:do_nothing()
+        move_servo(5, 10000) -- Position basse
+        state.action_state:fetch_plant()
     end
     if state.movement_state.current == "done" then
         local x,y, theta = get_pose()
-        local x_dest, y_dest, theta_dest = x + config.STEP_DISTANCE, y, theta
+        local x_dest, y_dest, theta_dest = x, y + config.STEP_DISTANCE, theta
         state.movement_state:move_safe(x_dest, y_dest, theta_dest)
         state.actions.pushing_PB11.jump_count = state.actions.pushing_PB11.jump_count + 1
+        print("JUMPING")
     end
 end
 
@@ -549,28 +567,80 @@ state.actions.fetching_plant = {}
 state.actions.fetching_plant.start_stamp = nil
 state.actions.fetching_plant.loop = function(timestamp)
     if state.actions.fetching_plant.start_stamp == nil then
+        print("fetching_plant start_stamping")
         state.actions.fetching_plant.start_stamp = timestamp
-        move_stepper(0, 200, 0.15) -- Go_to_bottom
+        do return end
     end
-    --if timestamp - state.actions.fetching_plant.start_stamp > ?????????? then
-    --    !!!!!!!!!!! move_servo --close
-    --end
---
-    --if timestamp - state.actions.fetching_plant.start_stamp > ?????????? then
-    --    !!!!!!!!!!! 
-    --    state.action_state:do_nothing()
-    --end
-    -- TODO
+
+    print(tostring(timestamp))
+    -- if servomoteur verouillé
+    if timestamp - state.actions.fetching_plant.start_stamp > 300 then
+        move_stepper(0, -2100, 0.05)
+    end
+
+    -- wait for palonnier assez haut avant de bouger
+    if timestamp - state.actions.fetching_plant.start_stamp > 1500 then
+        print("here")
+        state.action_state:do_nothing()
+    end
+
 end
 state.action_state.onfetch_plant = function(fsm, name, from, to)
     
     -- TODO
 end
+
+state.action_state.onmove_JTOP = function(fsm, name, from, to)
+    state.movement_state.on_stopped = function (self, event, from, to)
+        state.movement_state:wait_bck_cnl()
+    end
+    local x, y = state.get_wpt_coords("AML")
+    state.movement_state:move_safe(x, y, - config.pi / 2)
+    state.movement_state.ondone = function (self, event, from, to)
+        local x1 = get_pose()
+        state.movement_state:move_safe(x1, 2000, - config.pi / 2)
+        state.movement_state.ondone = function (self, event, from, to)
+            state.action_state:depose_plant()
+            state.movement_state.on_stopped = nil
+        end
+    end
+
+end
+
+state.action_state.ondepose_plant = function(fsm, name, from, to)
+
+end
+
+state.actions.deposing_plant = {}
+state.actions.deposing_plant.start_stamp = nil
+state.actions.deposing_plant.loop = function(timestamp)
+    if state.actions.deposing_plant.start_stamp == nil then
+        state.actions.deposing_plant.start_stamp = timestamp
+        move_stepper(0, -300, 0.05)
+        do return end
+    end
+
+    if timestamp - state.actions.deposing_plant.start_stamp > 3000 then
+        move_servo(5, 2000)
+    end
+
+    if timestamp - state.actions.deposing_plant.start_stamp > 3500 then
+        move_stepper(0, -1300, 0.05)
+    end
+
+    if timestamp - state.actions.deposing_plant.start_stamp > 5000 then
+        state.action_state:do_nothing()
+    end
+
+
+end
 -- action order
 
 state.action_order = {}
 --state.action_order[1] = state.action_state.move_S1
-state.action_order[1] = state.action_state.push_PB11
+state.action_order[1] = state.action_state.move_PB11
+--state.action_order[2] = state.action_state.move_JTOP
+--state.action_order[1] = state.action_state.push_PB11
     --state.init_act_reset_pos_corner_btm,
     --state.init_act_plant_PB6_to_closest_area,
 
@@ -658,7 +728,7 @@ function on_init(side)
     overwrite_pose(x_initial, y_initial, theta_initial)
     move_servo(1, 6000) --pince droite
     move_stepper(0, 200, 0.15) -- Stepper "initialization"
-    move_servo(5, 10000) -- Porte_pince
+    move_servo(5, 2000) -- Porte_pince (position haute)
     print("init done ! ")
     -- DEBUG TEST : 
 
