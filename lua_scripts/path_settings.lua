@@ -10,8 +10,10 @@ path_settings.table_coordinates = {
     A8 = {x=500, y=400},  -- Aruco bottom left corner (~8 o'clock)
     P6B = {x=1500, y=400}, -- Plant 6, bottom (6 o'clock)
 
-    P11B = {x=1000, y=530},
+    P11B = {x=900, y=530},
     AML = {x=700, y=1000}, -- Aruco Middle Left (between the two arucos)
+
+    FAPT = { x = 250, y = 1800} -- Final Approach Point (home Top)
 
 
 }

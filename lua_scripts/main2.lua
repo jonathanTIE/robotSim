@@ -3,7 +3,6 @@
 local path_settings = require("path_settings")
 local config = require("config")
 local utils = require("utils")
-local machine = require("statemachine") -- Library
 local state = require("state") -- Logic
 
 
