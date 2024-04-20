@@ -8,7 +8,8 @@ local state = require("state") -- Logic
 
 
 
-x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
+--x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
+x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, -config.pi / 2
 
 main_loop = nil -- coroutine/thread
 is_right = nil -- boolean

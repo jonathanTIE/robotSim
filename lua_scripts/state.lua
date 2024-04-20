@@ -63,6 +63,20 @@ state.move_S1 = function(timestamp)
     end
 end
 
+state.is_following_S1 = 0
+state.follow_S1 = function(timestmap)
+    if state.is_following_S1 == 0 then
+        state.is_following_S1 = 1
+        local x,y = get_pose()
+        state.move_safe(900, y - 100,config.theta_pince_mur - 0.1 * 2 )
+    end
+    if state.movement_state == 0 and state.is_following_S1 == 1 then
+        local x,y = get_pose()
+        overwrite_pose(x, 130, config.theta_pince_mur)
+        state.cb_finish(timestamp)
+    end
+
+end
 --
 --state.action_state.onfollow_wall_S1 = function(fsm, name, from, to)
 --    state.movement_state.onstopped = function (self, event, from, to)
@@ -215,12 +229,16 @@ end
 
 state.action_order = {}
 --state.action_order[1] = state.action_state.move_S1
-state.action_order[1] = state.move_P11B
-state.action_order[2] = state.push_P11B
-state.action_order[3] = state.fetch_plant
-state.action_order[4] = state.move_JTOP
-state.action_order[5] = state.depose_plant
-state.action_order[6] = state.home_top
+--state.action_order[1] = state.move_P11B
+--state.action_order[2] = state.push_P11B
+--state.action_order[3] = state.fetch_plant
+--state.action_order[4] = state.move_JTOP
+--state.action_order[5] = state.depose_plant
+--state.action_order[6] = state.home_top
+
+state.action_order[1] = state.move_S1
+state.action_order[2] = state.follow_S1
+state.action_order[3] = state.home_top
 
 
 state.cb_finish = function()

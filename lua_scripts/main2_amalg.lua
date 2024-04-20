@@ -206,31 +206,45 @@ state.move_safe = function (x, y, theta)
     set_pose(x,y,theta, true)
     
 end
-state.move_S1 = function(timestamp)
 
+
+state.move_S1_phase = 0
+state.move_S1 = function(timestamp)
+    if state.move_S1_phase == 0 then
+        state.move_S1_phase = 1
+        move_servo(1, 3000)
+        local x, y = state.get_wpt_coords("S1")
+        state.move_safe(x, y, config.theta_pince_mur) -- 60° in radians
+    end
+
+    if state.movement_state == 0 and state.move_S1_phase == 1 then
+        state.move_S1_phase = 2
+        local x,y = get_pose()
+        local x_dest, y_dest = x, config.ROBOT_CENTER_Y_BOTTOM - config.OVERSHOOT_MM
+        -- TODO : move_UNSAFE below
+        state.move_safe(x_dest, y_dest, config.theta_pince_mur - 0.1 * 1) -- Increment at each travel along wall -> Todo : convert to a variable
+
+    end
+
+    if state.movement_state == 1 and state.move_S1_phase == 2 then
+        state.cb_finish(timestamp)
+    end
 end
 
---state.action_state.onmove_S1 = function(fsm, name, from, to, timestamp)
---    print("beg act_solar_S1_to_S1_init")
---    move_servo(1, 3000)
---    local x, y = state.get_wpt_coords("S1")
---    state.movement_state:move_safe(x, y, config.theta_pince_mur) -- 60° in radians
---    state.movement_state.on_stopped = function (self, event, from, to)
---        state.movement_state:wait_bck_cnl()
---    end
---
---    -- Stick to wall with UNsafe move : 
---    state.movement_state.ondone = function (self, event, from, to)
---        local x,y = get_pose()
---        local x_dest, y_dest = x, config.ROBOT_CENTER_Y_BOTTOM - config.OVERSHOOT_MM
---        state.movement_state:move_blind(x_dest, y_dest, config.theta_pince_mur - 0.1 * 1) -- Increment at each travel along wall -> Todo : convert to a variable
---        state.movement_state.ondone = function (self, event, from, to)
---            state.action_state:follow_wall_S1()
---            state.movement_state.ondone = nil
---        end
---    end
---
---end
+state.is_following_S1 = 0
+state.follow_S1 = function(timestmap)
+    if state.is_following_S1 == 0 then
+        state.is_following_S1 = 1
+        local x,y = get_pose()
+        state.move_safe(900, y - 100,config.theta_pince_mur - 0.1 * 2 )
+    end
+    if state.movement_state == 0 and state.is_following_S1 == 1 then
+        local x,y = get_pose()
+        overwrite_pose(x, 130, config.theta_pince_mur)
+        state.cb_finish(timestamp)
+    end
+
+end
 --
 --state.action_state.onfollow_wall_S1 = function(fsm, name, from, to)
 --    state.movement_state.onstopped = function (self, event, from, to)
@@ -316,7 +330,7 @@ state.fetch_plant = function (timestamp)
     end
     -- once servomotor is locked
     if timestamp - state.start_action_stamp > 300 then
-        move_stepper(0, -2100, 0.05)
+        move_stepper(0, -2100, 0.1)
     end
     if timestamp - state.start_action_stamp > 1500 then
         state.cb_finish(timestamp)
@@ -344,7 +358,7 @@ end
 state.depose_plant_started = 0
 state.depose_plant = function (timestamp)
     if state.depose_plant_started == 0 then
-        move_stepper(0, -300, 0.05)
+        move_stepper(0, -300, 0.1)
         state.depose_plant_started = 1
     end
     if state.depose_plant_started == 1 
@@ -355,7 +369,7 @@ state.depose_plant = function (timestamp)
 
     if state.depose_plant_started == 2 and
     timestamp - state.start_action_stamp > 3500 then
-        move_stepper(0, -1300, 0.05)
+        move_stepper(0, -1300, 0.1)
         state.depose_plant_started = 3
     end
 
@@ -383,12 +397,16 @@ end
 
 state.action_order = {}
 --state.action_order[1] = state.action_state.move_S1
-state.action_order[1] = state.move_P11B
-state.action_order[2] = state.push_P11B
-state.action_order[3] = state.fetch_plant
-state.action_order[4] = state.move_JTOP
-state.action_order[5] = state.depose_plant
-state.action_order[6] = state.home_top
+--state.action_order[1] = state.move_P11B
+--state.action_order[2] = state.push_P11B
+--state.action_order[3] = state.fetch_plant
+--state.action_order[4] = state.move_JTOP
+--state.action_order[5] = state.depose_plant
+--state.action_order[6] = state.home_top
+
+state.action_order[1] = state.move_S1
+state.action_order[2] = state.follow_S1
+state.action_order[3] = state.home_top
 
 
 state.cb_finish = function()
@@ -454,7 +472,8 @@ end
 
 
 
-x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
+--x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
+x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, -config.pi / 2
 
 main_loop = nil -- coroutine/thread
 is_right = nil -- boolean
