@@ -3,7 +3,7 @@ path_settings = {}
 path_settings.table_coordinates = {
     INI = {x=280, y= 160}, -- starting position
     S6 = {x=2000, y=200}, -- 6th solar panel
-    S1 = {x=250, y=150}, -- 1st solar panel
+    S1 = {x=280, y=10}, -- 1st solar panel
     S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
     S1ER = {x = 450, y=120}, -- End 1st solar panel with Recalage
 
@@ -13,7 +13,7 @@ path_settings.table_coordinates = {
     P11B = {x=900, y=530},
     AML = {x=700, y=1000}, -- Aruco Middle Left (between the two arucos)
 
-    FAPT = { x = 250, y = 1800} -- Final Approach Point (home Top)
+    FAPT = { x = 160, y = 1600} -- Final Approach Point (home Top)
 
 
 }
@@ -211,36 +211,34 @@ end
 state.move_S1_phase = 0
 state.move_S1 = function(timestamp)
     if state.move_S1_phase == 0 then
+        print("TEST1")
         state.move_S1_phase = 1
         move_servo(1, 3000)
         local x, y = state.get_wpt_coords("S1")
-        state.move_safe(x, y, config.theta_pince_mur) -- 60° in radians
+        state.move_safe(x, y, config.theta_pince_mur - 0.1 * 1) -- 60° in radians
     end
 
     if state.movement_state == 0 and state.move_S1_phase == 1 then
-        state.move_S1_phase = 2
-        local x,y = get_pose()
-        local x_dest, y_dest = x, config.ROBOT_CENTER_Y_BOTTOM - config.OVERSHOOT_MM
-        -- TODO : move_UNSAFE below
-        state.move_safe(x_dest, y_dest, config.theta_pince_mur - 0.1 * 1) -- Increment at each travel along wall -> Todo : convert to a variable
-
-    end
-
-    if state.movement_state == 1 and state.move_S1_phase == 2 then
+        print("TEST2")
         state.cb_finish(timestamp)
     end
 end
 
 state.is_following_S1 = 0
 state.follow_S1 = function(timestmap)
+    print("follow_S1")
     if state.is_following_S1 == 0 then
+        print("TEST4")
         state.is_following_S1 = 1
         local x,y = get_pose()
         state.move_safe(900, y - 100,config.theta_pince_mur - 0.1 * 2 )
     end
     if state.movement_state == 0 and state.is_following_S1 == 1 then
+        print("TEST5")
         local x,y = get_pose()
-        overwrite_pose(x, 130, config.theta_pince_mur)
+        overwrite_pose(x, 150, config.theta_pince_mur)
+        state.score = state.score + 15
+        print("Score: " .. state.score)
         state.cb_finish(timestamp)
     end
 
@@ -382,12 +380,19 @@ end
 
 state.is_homing_top = false
 state.home_top = function (timestamp)
+    print("home_top")
     if state.is_homing_top == false then
         state.is_homing_top = true
         local x, y = state.get_wpt_coords("FAPT")
         state.move_safe(x, y, - config.pi / 2)
     end
     if state.movement_state == 0 and state.is_homing_top == true then
+        state.score = state.score + 10
+        local x, y = get_pose()
+        if not is_right then
+            state.move_safe(x - 800, y, - config.pi / 2)
+        end
+        print(state.score)
         state.cb_finish(timestamp)
     end
 
@@ -410,9 +415,9 @@ state.action_order[3] = state.home_top
 
 
 state.cb_finish = function()
-    print("cb_finished !")
+    --print("cb_finished !")
     if state.action_order[1] ~= nil or true then
-        print("finished action ".. tostring(state.action_order[1]))
+        --print("finished action ".. tostring(state.action_order[1]))
         table.remove(state.action_order, 1)
         state.start_action_stamp = timestamp
 
@@ -457,7 +462,9 @@ function state.loop(timestamp)
     --}
 
     -- ACTION LOOP
-    state.action_order[1](timestamp)
+    if state.action_order[1] ~= nil then
+        state.action_order[1](timestamp)
+    end
     
 
 end
@@ -472,8 +479,7 @@ end
 
 
 
---x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0
-x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, -config.pi / 2
+x_initial, y_initial, theta_initial = path_settings.table_coordinates.INI.x, path_settings.table_coordinates.INI.y, 0 --  -0.3
 
 main_loop = nil -- coroutine/thread
 is_right = nil -- boolean
@@ -482,6 +488,10 @@ start_time = nil
 test_function_done = false
 function on_init(side)
     is_right = side
+    if is_right then
+        state.action_order = {}
+        state.action_order[1] = state.home_top
+    end
     overwrite_pose(x_initial, y_initial, theta_initial)
     move_servo(1, 6000) --pince droite
     move_stepper(0, 200, 0.15) -- Stepper "initialization"

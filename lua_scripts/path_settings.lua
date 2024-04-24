@@ -3,7 +3,7 @@ path_settings = {}
 path_settings.table_coordinates = {
     INI = {x=280, y= 160}, -- starting position
     S6 = {x=2000, y=200}, -- 6th solar panel
-    S1 = {x=250, y=150}, -- 1st solar panel
+    S1 = {x=280, y=10}, -- 1st solar panel
     S1EO = {x=450, y=0}, -- End 1st solar panel with Overshoot
     S1ER = {x = 450, y=120}, -- End 1st solar panel with Recalage
 
@@ -13,7 +13,7 @@ path_settings.table_coordinates = {
     P11B = {x=900, y=530},
     AML = {x=700, y=1000}, -- Aruco Middle Left (between the two arucos)
 
-    FAPT = { x = 250, y = 1800} -- Final Approach Point (home Top)
+    FAPT = { x = 160, y = 1600} -- Final Approach Point (home Top)
 
 
 }
